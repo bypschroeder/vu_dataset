@@ -1,0 +1,27 @@
+{
+    "cycles": 1,
+    "scene": {
+        "place_camera": true,
+        "place_light": true,
+        "randomize_camera": false,
+        "randomize_light": false
+    },
+    "human": {
+        "randomize_pose": true
+    },
+    "clothing": {
+        "add_top": true,
+        "add_bottom": false
+    },
+    "export": {
+        "export_obj": false,
+        "export_fbx": false,
+        "export_glb": false
+    },
+    "render": {
+        "render_image": true,
+        "image_path": "output/render_images/",
+        "image_width": 1920,
+        "image_height": 1080
+    }
+}
