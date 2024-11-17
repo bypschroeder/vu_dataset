@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import os
 
 def generate_random_pose(filepath):
     """
@@ -194,10 +195,12 @@ def generate_random_pose(filepath):
         'body_pose': np.random.normal(0, 0.1, (1, 63)).astype(np.float32)  # 63 for SMPL model body pose
     }
 
-    with open("D:\\Projects\\vu_blender\\smpl\\random_pose.pkl", "wb") as f:
+    with open(filepath, "wb") as f:
         pickle.dump(pose_data, f)
 
     return filepath
 
-if __name__ == '__main__':
-    generate_random_pose("D:\\Projects\\vu_blender\\smpl\\random_pose.pkl")
+if __name__ == "__main__":
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    relative_path = os.path.join(script_dir, "random_pose.pkl")
+    generate_random_pose(relative_path)

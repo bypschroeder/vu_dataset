@@ -15,3 +15,23 @@ To install the required addon and setup Blender, run the setup.py script with ``
 Modify the configuration file as needed for settings like Cycles and others.
 
 Now you can start the main-script by running ``blender --python main.py`` or if you want to run it in background ``blender --background --python main.py``
+
+# VPoser
+When running the VPoser to generate a SMPLX-Pose and visualize it with an SMPLX-Model some dependencies need to be adjusted.
+
+1. torchgeomety: torchgeometry\core\conversions.py, line 302, 
+    - mask_c1 = mask_d2 * (1 - mask_d0_d1) => mask_c1 = mask_d2 * ~(mask_d0_d1)
+    - mask_c2 = (1 - mask_d2) * mask_d0_nd1 => mask_c2 = ~(mask_d2) * mask_d0_nd1
+    - mask_c3 = (1 - mask_d2) * (1 - mask_d0_nd1) => mask_c3 = ~(mask_d2) * ~(mask_d0_nd1)
+2. human_body_prior: human_body_prior\body_model\body_model.py
+    -  verts, joints = lbs(betas=shape_components, pose=full_pose, v_template=self.v_template,
+                         shapedirs=shapedirs, posedirs=self.posedirs,
+                         J_regressor=self.J_regressor, parents=self.kintree_table[0].long(),
+                         lbs_weights=self.weights,
+                         dtype=self.dtype)
+    
+    - verts, joints = lbs(betas=shape_components, pose=full_pose, v_template=self.v_template,
+                shapedirs=shapedirs, posedirs=self.posedirs,
+                J_regressor=self.J_regressor, parents=self.kintree_table[0].long(),
+                lbs_weights=self.weights)
+3. OpenGL error when creating images with trimesh? Because of graphics driver, etc.
