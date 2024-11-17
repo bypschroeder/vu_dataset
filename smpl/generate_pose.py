@@ -29,6 +29,28 @@ def generate_and_save_pose(bm_path, expr_dir, output_image_path, num_samples=1):
     
     # Generiere Posen
     sampled_pose_body = c2c(vposer_pt.sample_poses(num_poses=num_samples))
+    # # print(sampled_pose_body) # 1 x 1 x 21 x 3 = 63 -> auch Größe des Arrays von body_pose
+    # flat_pose_body = sampled_pose_body.reshape(sampled_pose_body.shape[1] * sampled_pose_body.shape[2], sampled_pose_body.shape[3])
+    # # print(flat_pose_body) # 63
+
+    # pose_dict = {
+    #     'betas': np.random.normal(0, 0.1, (1, 10)).astype(np.float32),
+    #     'global_orient': np.random.normal(0, 0.1, (1, 3)).astype(np.float32),
+    #     'transl': np.random.normal(0, 0.1, (1, 3)).astype(np.float32),
+    #     'left_hand_pose': np.random.normal(0, 0.1, (1, 45)).astype(np.float32),
+    #     'right_hand_pose': np.random.normal(0, 0.1, (1, 45)).astype(np.float32),
+    #     'jaw_pose': np.random.normal(0, 0.05, (1, 3)).astype(np.float32),  # Smaller range for jaw
+    #     'leye_pose': np.random.normal(0, 0.05, (1, 3)).astype(np.float32),
+    #     'reye_pose': np.random.normal(0, 0.05, (1, 3)).astype(np.float32),
+    #     'expression': np.random.normal(0, 0.1, (1, 10)).astype(np.float32),
+    #     'body_pose': flat_pose_body
+    # }
+    # # Exakt gleiche Struktur mit gleicher Anzahl an Werten, allerdings ändert sich hier die Pose nicht
+
+    # print(pose_dict)
+
+    # with open("D:\\Projects\\vu_blender\\smpl\\random_pose2.pkl", "wb") as f:
+    #     pickle.dump(pose_dict, f)
 
     # Erstelle eine Ansicht der generierten Pose und speichere sie als Bild
     view_angles = [0, 90, -90]  # Verschiedene Winkel für die Ansicht
@@ -54,8 +76,10 @@ def generate_and_save_pose(bm_path, expr_dir, output_image_path, num_samples=1):
 
 if __name__ == '__main__':
     # Pfade zum SMPL-Modell und VPoser-Verzeichnis
-    bm_path = 'D:/Projects/vu_blender/smpl/models/smplx/SMPLX_NEUTRAL.npz'  # Pfad zu deinem SMPL/SMPLX Modell
+    bm_path = 'D:/Projects/vu_blender/smpl/models/smplx/SMPLX_MALE.npz'  # Pfad zum SMPL/SMPLX Modell
     expr_dir = 'D:/Projects/vu_blender/smpl/vposer_v1_0'  # Pfad zum VPoser Modell
     
     output_image_path = r"D:\\Projects\\vu_blender\\output.png"
     generate_and_save_pose(bm_path, expr_dir, output_image_path)
+
+    # generate_random_pose(expr_dir)

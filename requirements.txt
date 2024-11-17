@@ -11,7 +11,7 @@ lazy_loader==0.4
 MarkupSafe==3.0.1
 mpmath==1.3.0
 networkx==3.4.1
-numpy==2.1.2
+numpy==1.24.3
 opencv-python==4.10.0.84
 packaging==24.2
 pillow==11.0.0
