@@ -35,3 +35,13 @@ When running the VPoser to generate a SMPLX-Pose and visualize it with an SMPLX-
                 J_regressor=self.J_regressor, parents=self.kintree_table[0].long(),
                 lbs_weights=self.weights)
 3. OpenGL error when creating images with trimesh? Because of graphics driver, etc.
+
+# TODOs
+
+- [x] Blender crashes fixen
+- [x] Installationsanleitung + Dokumentation
+- [ ] Mehr Tops/Bottoms erstellen in XS - XXL
+- [ ] Hosenbund in Blender an Hüfte anpassen und pinnen?
+- [ ] Tops mit Bottoms kollidieren + Tops immer über Bottoms fallen lassen
+- [ ] SMPLX-Posen generieren (mit VPoser oder eigenem Algorithus)
+- [ ] Liste an Materialien erstellen, die auf die Klamotten angewendet werden
