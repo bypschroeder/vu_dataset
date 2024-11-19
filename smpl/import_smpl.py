@@ -3,8 +3,9 @@ import random
 import os
 
 from _helpers.path import get_relative_path
-from smpl.create_pose import generate_random_pose
+from smpl.generate_pose import generate_random_pose
 from clothing.modifiers import add_collision_modifier
+from _helpers.material import set_material_base_color
 
 def import_smplx_model(gender="neutral"):
     """
@@ -91,9 +92,9 @@ def get_random_height(gender):
     """
 
     if gender == "female":
-        height = random.triangular(1.4, 1.75, 2.0)
+        height = random.triangular(1.4, 1.65, 2.0)
     else:
-        height = random.uniform(1.5, 2.2)
+        height = random.triangular(1.5, 1.8, 2.2)
 
     return round(height, 2)
 
@@ -108,11 +109,14 @@ def get_random_weight(height):
     """
 
     mean_weight = 22 * (height ** 2)
-    std_dev = 5
+    std_dev = 15
 
     weight = random.gauss(mean_weight, std_dev)
 
-    weight = max(40.0, min(weight, 110.0))
+    min_weight = 18 * (height ** 2)
+    max_weight = 30 * (height ** 2)
+
+    weight = max(min_weight, min(weight, max_weight))
 
     return round(weight, 2)
 
@@ -193,6 +197,7 @@ def create_random_smplx_model(randomize_pose="true"):
     print(f"Height: {height}, Weight: {weight}")
 
     import_smplx_model(gender)
+    set_material_base_color(f"SMPLX-mesh-{gender}", "#FF0000")
 
     bpy.ops.object.smplx_snap_ground_plane()
 
@@ -205,9 +210,8 @@ def create_random_smplx_model(randomize_pose="true"):
     set_keyframe_shape_keys(f"SMPLX-mesh-{gender}", start_frame)
     
     if randomize_pose:
-        pose_path = generate_random_pose(get_relative_path("/smpl/random_pose.pkl"))
+        pose_path, pose_dict = generate_random_pose(get_relative_path("/smpl/random_pose.pkl"))
         load_pose(pose_path)
-        print("Loaded pose")
 
         set_keyframe_bones(f"SMPLX-{gender}", end_frame)
         bpy.context.scene.frame_set(end_frame)
@@ -230,4 +234,4 @@ def create_random_smplx_model(randomize_pose="true"):
     if z_offset is None:
         raise ValueError("Z-offset could not be calculated. Ensure keyframes are properly set.")
 
-    return gender, height, weight, z_offset
+    return gender, height, weight, z_offset, pose_dict

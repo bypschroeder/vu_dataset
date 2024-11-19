@@ -1,9 +1,9 @@
 import bpy
 import os
 import random
+from pathlib import Path
 
-from _helpers.path import get_relative_path
-from clothing.modifiers import set_cloth_material, add_collision_modifier
+from clothing.modifiers import set_cloth_material
 
 # Map the clothing base names to the clothing materials
 clothing_material_map = {
@@ -48,21 +48,21 @@ def get_random_blend_file(folder_path):
     :return: The path to the blend file.
     :rtype: str
     """
-    subfolders = [f.path for f in os.scandir(folder_path) if f.is_dir()]
 
-    if not subfolders:
-        print("No subfolders found")
-        return None
-    
-    random_folder = random.choice(subfolders)
-
-    blend_files = [f.path for f in os.scandir(random_folder) if f.is_file() and f.name.endswith('.blend')]
+    blend_files = [
+        os.path.join(folder_path, file)
+        for file in os.listdir(folder_path)
+        if os.path.isfile(os.path.join(folder_path, file)) and file.endswith(".blend")
+    ]
 
     if not blend_files:
         print("No blend files found")
         return None
     
-    return os.path.join(folder_path, random.choice(blend_files))
+    base_dir = Path(__file__).parent.parent
+    file = random.choice(blend_files)
+
+    return os.path.join(base_dir, file)
 
 def get_object_name_from_filepath(filepath):
     """
@@ -79,24 +79,24 @@ def get_object_name_from_filepath(filepath):
 
     return object_name[0]
 
-def append_random_top():
+def append_random_top(folder_path):
     """
     Appends a random top to the scene.
     """
-    top_path = get_random_blend_file(get_relative_path("/clothing/models/tops/"))
+    top_path = get_random_blend_file(folder_path)
 
     if top_path:
         top_obj = append_object(top_path, get_object_name_from_filepath(top_path))
         top_base_name = top_obj.name.split("_", 1)[-1]
         if top_base_name in clothing_material_map:
             set_cloth_material(top_obj, clothing_material_map[top_base_name])
-        # add_collision_modifier(top_obj)
+        return os.path.basename(top_path).split(".")[0]
 
-def append_random_bottom(z_offset, frame_start, frame_end):
+def append_random_bottom(z_offset, frame_start, frame_end, folder_path):
     """
     Appends a random bottom to the scene.
     """
-    bottom_path = get_random_blend_file(get_relative_path("/clothing/models/bottoms/"))
+    bottom_path = get_random_blend_file(folder_path)
 
     if bottom_path:
         bottom_obj = append_object(bottom_path, get_object_name_from_filepath(bottom_path))
@@ -108,4 +108,4 @@ def append_random_bottom(z_offset, frame_start, frame_end):
         bottom_base_name = bottom_obj.name.split("_", 1)[-1]
         if bottom_base_name in clothing_material_map:
             set_cloth_material(bottom_obj, clothing_material_map[bottom_base_name])
-        # add_collision_modifier(bottom_obj)
+        return os.path.basename(bottom_path).split(".")[0]

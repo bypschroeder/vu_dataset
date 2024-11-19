@@ -1,5 +1,18 @@
 {
-    "cycles": 1,
+    "clothing_cycles": [
+        {
+            "type": "top",
+            "name": "T-Shirt",
+            "cycles": 10,
+            "folder_path": "clothing/models/tops/t-shirt"
+        },
+        {
+            "type": "top",
+            "name": "Longsleeve",
+            "cycles": 10,
+            "folder_path": "clothing/models/tops/longsleeve"
+        }
+    ],
     "scene": {
         "place_camera": true,
         "place_light": true,
@@ -14,14 +27,11 @@
         "add_bottom": false
     },
     "export": {
-        "export_obj": false,
+        "export_obj": true,
         "export_fbx": false,
         "export_glb": false
     },
     "render": {
-        "render_image": true,
-        "image_path": "output/render_images/",
-        "image_width": 1920,
-        "image_height": 1080
+        "render_image": true
     }
 }

@@ -19,7 +19,7 @@ Now you can start the main-script by running ``blender --python main.py`` or if 
 # VPoser
 When running the VPoser to generate a SMPLX-Pose and visualize it with an SMPLX-Model some dependencies need to be adjusted.
 
-1. torchgeomety: torchgeometry\core\conversions.py, line 302, 
+1. torchgeometry: torchgeometry\core\conversions.py, line 302, 
     - mask_c1 = mask_d2 * (1 - mask_d0_d1) => mask_c1 = mask_d2 * ~(mask_d0_d1)
     - mask_c2 = (1 - mask_d2) * mask_d0_nd1 => mask_c2 = ~(mask_d2) * mask_d0_nd1
     - mask_c3 = (1 - mask_d2) * (1 - mask_d0_nd1) => mask_c3 = ~(mask_d2) * ~(mask_d0_nd1)
@@ -34,7 +34,6 @@ When running the VPoser to generate a SMPLX-Pose and visualize it with an SMPLX-
                 shapedirs=shapedirs, posedirs=self.posedirs,
                 J_regressor=self.J_regressor, parents=self.kintree_table[0].long(),
                 lbs_weights=self.weights)
-3. OpenGL error when creating images with trimesh? Because of graphics driver, etc.
 
 # TODOs
 
@@ -42,6 +41,7 @@ When running the VPoser to generate a SMPLX-Pose and visualize it with an SMPLX-
 - [x] Installationsanleitung + Dokumentation
 - [ ] Mehr Tops/Bottoms erstellen in XS - XXL
 - [ ] Hosenbund in Blender an Hüfte anpassen und pinnen?
-- [ ] Tops mit Bottoms kollidieren + Tops immer über Bottoms fallen lassen
-- [ ] SMPLX-Posen generieren (mit VPoser oder eigenem Algorithus)
-- [ ] Liste an Materialien erstellen, die auf die Klamotten angewendet werden
+- [x] SMPLX-Posen generieren 
+- [x] Mesh in 1 Farbe, damit man es unterscheiden kann
+- [x] 3 Bilder einmal nur Mesh, nur Kleidung und beides
+- [x] 1x .obj, 3 Bilder, 1x SMPL-Pose, 1x Größe, Gewicht, Geschlecht, Kleidergröße

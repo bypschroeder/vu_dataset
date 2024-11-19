@@ -2,6 +2,8 @@ import bpy
 import os
 import sys
 import gc
+import json
+import pickle
 
 """
 Adds the necessary subdirectories to the system path so Blender can find the scripts.
@@ -34,61 +36,86 @@ Disable the Blender splash screen at startup.
 bpy.context.preferences.view.show_splash = False
 
 """
-Loop for creating a random smplx model and simulating clothing for each cycle.
+Cycle through each clothing type and export the results.
 """
-for i in range(config["cycles"]):
-    # Create scene
-    clear_scene()
-    if config["scene"]["place_camera"]:
-        if config["scene"]["randomize_camera"]:
-            camera = add_camera((0, 0, 0), (0, 0, 0))
-        else:
-            camera = add_camera((0, -60, 10), (90, 0, 0))
-    if config["scene"]["place_light"]:
-        if config["scene"]["randomize_light"]:
-            light = add_light((0, 0, 0))
-        else:
-            light = add_light((90, 0, 0))
+for clothing_config in config["clothing_cycles"]:
+    print(f"Processing {clothing_config['name']}")
 
-    # Create human
-    gender, height, weight, z_offset = create_random_smplx_model(randomize_pose=config["human"]["randomize_pose"])
+    for i in range(clothing_config["cycles"]):
+        # Create scene
+        clear_scene()
+        if config["scene"]["place_camera"]:
+            if config["scene"]["randomize_camera"]:
+                camera = add_camera((0, 0, 0), (0, 0, 0))
+            else:
+                camera = add_camera((0, -34, 10.5), (90, 0, 0))
+        if config["scene"]["place_light"]:
+            if config["scene"]["randomize_light"]:
+                light = add_light((0, 0, 0))
+            else:
+                light = add_light((90, 0, 0))
 
-    # Add clothing
-    if config["clothing"]["add_top"]:
-        append_random_top()
-    
-    if config["clothing"]["add_bottom"]:
-        append_random_bottom(z_offset=z_offset, frame_start=10, frame_end=40)
+        # Create human
+        gender, height, weight, z_offset, pose_dict = create_random_smplx_model(randomize_pose=config["human"]["randomize_pose"])
 
-    # Bake cloth simulation
-    bpy.context.scene.frame_start = 0
-    bpy.context.scene.frame_end = 60
+        # Add clothing
+        if clothing_config["type"] == "top":
+            garment = append_random_top(clothing_config["folder_path"])
+            
+        if clothing_config["type"] == "bottom":
+            garment = append_random_bottom(z_offset=z_offset, frame_start=10, frame_end=40, folder_path=clothing_config["folder_path"])
 
-    for obj in bpy.data.objects:
-        for modifier in obj.modifiers:
-            if modifier.type == 'CLOTH': 
-                modifier.point_cache.frame_start = bpy.context.scene.frame_start
-                modifier.point_cache.frame_end = bpy.context.scene.frame_end
+        # Bake cloth simulation
+        bpy.context.scene.frame_start = 0
+        bpy.context.scene.frame_end = 60
 
-    bpy.ops.ptcache.bake_all(bake=True)
+        for obj in bpy.data.objects:
+            for modifier in obj.modifiers:
+                if modifier.type == 'CLOTH': 
+                    modifier.point_cache.frame_start = bpy.context.scene.frame_start
+                    modifier.point_cache.frame_end = bpy.context.scene.frame_end
 
-    # Export
-    if config["export"]["export_obj"]:
-        export_to_obj(get_relative_path(f"/output/export_obj/{i}.obj")) # change export path to config
-    
-    if config["export"]["export_fbx"]:
-        export_to_fbx(get_relative_path(f"/output/export_fbx/{i}.fbx")) # change export path to config
+        bpy.ops.ptcache.bake_all(bake=True)
+
+        # Export
+        if not os.path.exists(get_relative_path("/output")):
+            os.makedirs(get_relative_path("/output"))
         
-    if config["export"]["export_glb"]:
-        export_to_glb(get_relative_path(f"/output/export_glb/{i}.glb")) # change export path to config
+        if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}")):
+            os.makedirs(get_relative_path(f"/output/{clothing_config['name']}"))
 
-    # Render
-    if config["render"]["render_image"]:
-        render_image(camera, get_relative_path(f"/output/render_images/{i}.png")) # change export path to config
-    
-    # Cleanup
-    del camera
-    del light
-    bpy.ops.outliner.orphans_purge(do_recursive=True, do_linked_ids=True, do_local_ids=True)
-    bpy.ops.ptcache.free_bake_all()
-    gc.collect()
+        if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}")):
+            os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}"))
+
+        if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}/images")):
+            os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}/images"))
+
+        render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/full.png"), target_object_name=None)
+        render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/avatar.png"), target_object_name=f"SMPLX-mesh-{gender}")
+        render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/garment.png"), target_object_name=garment)
+
+        if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj")):
+            os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj"))
+
+        if config["export"]["export_obj"]:
+            export_to_obj(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/full.obj"))
+
+        export_info = {
+            "height": height,
+            "weight": weight,
+            "gender": gender,
+            "garment": garment,
+        }
+
+        with open(get_relative_path(f"/output/{clothing_config['name']}/{i}/export_info.json"), "w") as f:
+            json.dump(export_info, f)
+
+        with open(get_relative_path(f"/output/{clothing_config['name']}/{i}/pose.pkl"), "wb") as f:
+            pickle.dump(pose_dict, f)
+
+        # Cleanup
+        del camera
+        del light
+        bpy.ops.outliner.orphans_purge(do_recursive=True, do_linked_ids=True, do_local_ids=True)
+        bpy.ops.ptcache.free_bake_all()
+        gc.collect()
