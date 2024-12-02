@@ -24,6 +24,7 @@ from _helpers.path import get_relative_path
 from _helpers.render import render_image
 from smpl.import_smpl import create_random_smplx_model
 from clothing.append_clothing import append_random_top, append_random_bottom
+from clothing.modifiers import postprocess_top, postprocess_bottom
 
 """
 Load the config file.
@@ -39,35 +40,27 @@ bpy.context.preferences.view.show_splash = False
 Cycle through each clothing type and export the results.
 """
 for clothing_config in config["clothing_cycles"]:
-    print(f"Processing {clothing_config['name']}")
+    print(f"\033[1;31mProcessing {clothing_config['name']}\033[0m")
 
     for i in range(clothing_config["cycles"]):
         # Create scene
         clear_scene()
-        if config["scene"]["place_camera"]:
-            if config["scene"]["randomize_camera"]:
-                camera = add_camera((0, 0, 0), (0, 0, 0))
-            else:
-                camera = add_camera((0, -34, 10.5), (90, 0, 0))
-        if config["scene"]["place_light"]:
-            if config["scene"]["randomize_light"]:
-                light = add_light((0, 0, 0))
-            else:
-                light = add_light((90, 0, 0))
+        camera = add_camera((0, -34, 10.5), (90, 0, 0))
+        light = add_light((90, 0, 0))
 
         # Create human
-        gender, height, weight, z_offset, pose_dict = create_random_smplx_model(randomize_pose=config["human"]["randomize_pose"])
+        gender, height, weight, z_offset, pose_dict = create_random_smplx_model(randomize_pose=config["avatar"]["randomize_pose"], color=config["avatar"]["avatar_color"])
 
         # Add clothing
         if clothing_config["type"] == "top":
-            garment = append_random_top(clothing_config["folder_path"])
+            garment_name, top_obj = append_random_top(clothing_config["folder_path"], gender)
             
         if clothing_config["type"] == "bottom":
-            garment = append_random_bottom(z_offset=z_offset, frame_start=10, frame_end=40, folder_path=clothing_config["folder_path"])
+            garment_name, bottom_obj = append_random_bottom(z_offset, 10, 40, clothing_config["folder_path"], gender)
 
         # Bake cloth simulation
         bpy.context.scene.frame_start = 0
-        bpy.context.scene.frame_end = 60
+        bpy.context.scene.frame_end = 80
 
         for obj in bpy.data.objects:
             for modifier in obj.modifiers:
@@ -77,7 +70,12 @@ for clothing_config in config["clothing_cycles"]:
 
         bpy.ops.ptcache.bake_all(bake=True)
 
-        # Export
+        if clothing_config["type"] == "top":
+            postprocess_top(top_obj, clothing_config["thickness"], clothing_config["subdivisions"])
+        if clothing_config["type"] == "bottom":
+            postprocess_bottom(bottom_obj, clothing_config["thickness"], clothing_config["subdivisions"])
+
+        # Output
         if not os.path.exists(get_relative_path("/output")):
             os.makedirs(get_relative_path("/output"))
         
@@ -87,31 +85,46 @@ for clothing_config in config["clothing_cycles"]:
         if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}")):
             os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}"))
 
-        if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}/images")):
-            os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}/images"))
+        if config["output"]["render_avatar"] or config["output"]["render_garment"] or config["output"]["render_full"]:
+            if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}/images")):
+                os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}/images"))
 
-        render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/full.png"), target_object_name=None)
-        render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/avatar.png"), target_object_name=f"SMPLX-mesh-{gender}")
-        render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/garment.png"), target_object_name=garment)
+            if config["output"]["render_avatar"]:
+                render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/avatar.png"), target_object_name=f"SMPLX-mesh-{gender}")
 
-        if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj")):
-            os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj"))
+            if config["output"]["render_garment"]:
+                render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/full.png"), target_object_name=None)
 
-        if config["export"]["export_obj"]:
-            export_to_obj(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/full.obj"))
+            if config["output"]["render_full"]:
+                render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/garment.png"), target_object_name=garment_name)
 
-        export_info = {
-            "height": height,
-            "weight": weight,
-            "gender": gender,
-            "garment": garment,
-        }
+        if config["output"]["export_obj"] or config["output"]["export_fbx"] or config["output"]["export_glb"]:
+            if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj")):
+                os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj"))
 
-        with open(get_relative_path(f"/output/{clothing_config['name']}/{i}/export_info.json"), "w") as f:
-            json.dump(export_info, f)
+            if config["output"]["export_obj"]:
+                export_to_obj(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/full.obj"))
 
-        with open(get_relative_path(f"/output/{clothing_config['name']}/{i}/pose.pkl"), "wb") as f:
-            pickle.dump(pose_dict, f)
+            if config["output"]["export_fbx"]:
+                export_to_fbx(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/full.fbx"))
+
+            if config["output"]["export_glb"]:
+                export_to_glb(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/full.glb"))
+
+        if config["output"]["save_export_info"]:
+            export_info = {
+                "height": height,
+                "weight": weight,
+                "gender": gender,
+                "garment": garment_name,
+            }
+
+            with open(get_relative_path(f"/output/{clothing_config['name']}/{i}/export_info.json"), "w") as f:
+                json.dump(export_info, f)
+        
+        if config["output"]["save_pose"]:
+            with open(get_relative_path(f"/output/{clothing_config['name']}/{i}/pose.pkl"), "wb") as f:
+                pickle.dump(pose_dict, f)
 
         # Cleanup
         del camera

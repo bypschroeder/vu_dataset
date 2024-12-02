@@ -1,6 +1,6 @@
 import bpy
 
-def set_cloth_material(obj, material_type="default"):
+def set_cloth_material(obj, material_type):
     """
     Sets the cloth material for an object.
 
@@ -17,87 +17,122 @@ def set_cloth_material(obj, material_type="default"):
     cloth_settings = cloth_modifier.settings
     collision_settings = cloth_modifier.collision_settings
 
-    add_smooth_modifier(obj)
-
-    if material_type == "cotton":
+    if material_type == "t-shirt":
         cloth_settings.quality = 8
-        cloth_settings.mass = 0.3
-        cloth_settings.air_damping = 1
+        cloth_settings.mass = 0.2
 
-        cloth_settings.tension_stiffness = 22.5
-        cloth_settings.compression_stiffness = 22.5
-        cloth_settings.shear_stiffness = 22.5
-        cloth_settings.bending_stiffness = 0.510
+        cloth_settings.tension_stiffness = 15
+        cloth_settings.compression_stiffness = 15
+        cloth_settings.shear_stiffness = 15
+        cloth_settings.bending_stiffness = 0.500
 
         cloth_settings.tension_damping = 5
         cloth_settings.compression_damping = 5
         cloth_settings.shear_damping = 5
-        cloth_settings.bending_damping = 0.350
+        cloth_settings.bending_damping = 0.500
 
         collision_settings.collision_quality = 4
+        collision_settings.distance_min = 0.017
+
         collision_settings.use_self_collision = True
         collision_settings.self_distance_min = 0.001
-    elif material_type == "denim":
-        cloth_settings.quality = 12
-        cloth_settings.mass = 1.0
+    elif material_type == "pants":
+        cloth_settings.quality = 8
+        cloth_settings.mass = 0.8
         cloth_settings.air_damping = 1
 
-        cloth_settings.tension_stiffness = 18
-        cloth_settings.compression_stiffness = 18
-        cloth_settings.shear_stiffness = 18
-        cloth_settings.bending_stiffness = 2.507
+        cloth_settings.tension_stiffness = 40
+        cloth_settings.compression_stiffness = 40
+        cloth_settings.shear_stiffness = 40
+        cloth_settings.bending_stiffness = 10
 
-        cloth_settings.tension_damping = 5
-        cloth_settings.compression_damping = 5
+        cloth_settings.tension_damping = 25
+        cloth_settings.compression_damping = 25
         cloth_settings.shear_damping = 5
-        cloth_settings.bending_damping = 0.007
+        cloth_settings.bending_damping = 0.5
 
-        collision_settings.collision_quality = 8
-        collision_settings.use_self_collision = True
-        collision_settings.self_distance_min = 0.001
-    elif material_type == "wool":
-        cloth_settings.quality = 12
-        cloth_settings.mass = 0.1
-        cloth_settings.air_damping = 1
+        collision_settings.collision_quality = 4
+        collision_settings.distance_min = 0.017
 
-        cloth_settings.tension_stiffness = 1.35
-        cloth_settings.compression_stiffness = 1.35
-        cloth_settings.shear_stiffness = 1.35
-        cloth_settings.bending_stiffness = 1.508
-
-        cloth_settings.tension_damping = 5
-        cloth_settings.compression_damping = 5
-        cloth_settings.shear_damping = 5
-        cloth_settings.bending_damping = 0.210
-
-        collision_settings.collision_quality = 8
         collision_settings.use_self_collision = True
         collision_settings.self_distance_min = 0.001
 
-    elif material_type == "silk":
-        cloth_settings.quality = 12
-    elif material_type == "linen":
-        cloth_settings.quality = 12
-    elif material_type == "default":
-        cloth_settings.quality = 12
-        cloth_settings.mass = 0.5
+        cloth_settings.vertex_group_mass = "Waistband"
+        cloth_settings.pin_stiffness = 0.1
+    elif material_type == "shorts":
+        cloth_settings.quality = 8
+        cloth_settings.mass = 0.4
         cloth_settings.air_damping = 1
 
-        cloth_settings.tension_stiffness = 22.5
-        cloth_settings.compression_stiffness = 22.5
-        cloth_settings.shear_stiffness = 22.5
-        cloth_settings.bending_stiffness = 5.005
+        cloth_settings.tension_stiffness = 30
+        cloth_settings.compression_stiffness = 30
+        cloth_settings.shear_stiffness = 30
+        cloth_settings.bending_stiffness = 7
 
-        cloth_settings.tension_damping = 5
-        cloth_settings.compression_damping = 5
+        cloth_settings.tension_damping = 25
+        cloth_settings.compression_damping = 25
         cloth_settings.shear_damping = 5
-        cloth_settings.bending_damping = 0.007
+        cloth_settings.bending_damping = 0.5
 
-        collision_settings.collision_quality = 8
+        collision_settings.collision_quality = 4
+        collision_settings.distance_min = 0.017
+
         collision_settings.use_self_collision = True
-        collision_settings.self_distance_min = 0.001    
+        collision_settings.self_distance_min = 0.001
+
+        cloth_settings.vertex_group_mass = "Waistband"
+        cloth_settings.pin_stiffness = 0.1
+    elif material_type == "hoodie":
+        cloth_settings.quality = 8
+        cloth_settings.mass = 0.4
+
+        cloth_settings.tension_stiffness = 80
+        cloth_settings.compression_stiffness = 80
+        cloth_settings.shear_stiffness = 80
+        cloth_settings.bending_stiffness = 150
+
+        cloth_settings.tension_damping = 25
+        cloth_settings.compression_damping = 5
+        cloth_settings.shear_damping = 25
+        cloth_settings.bending_damping = 0.500
+
+        collision_settings.collision_quality = 4
+        collision_settings.distance_min = 0.017
+
+        collision_settings.use_self_collision = True
+        collision_settings.self_distance_min = 0.001
+    elif material_type == "sweater":
+        cloth_settings.quality = 8
+        cloth_settings.mass = 0.3
+
+        cloth_settings.tension_stiffness = 70
+        cloth_settings.compression_stiffness = 70
+        cloth_settings.shear_stiffness = 70
+        cloth_settings.bending_stiffness = 125
+
+        cloth_settings.tension_damping = 25
+        cloth_settings.compression_damping = 5
+        cloth_settings.shear_damping = 25
+        cloth_settings.bending_damping = 0.500
+
+        collision_settings.collision_quality = 4
+        collision_settings.distance_min = 0.017
+
+        collision_settings.use_self_collision = True
+        collision_settings.self_distance_min = 0.001
     else:
         print("Material type not found")
+
+def add_solidify_modifier(obj, thickness=-0.1):
+    """
+    Adds a solidify modifier to an object.
+
+    :param obj: The object to add the solidify modifier to.
+    :type obj: bpy.types.Object
+    """
+    solidify_modifier = obj.modifiers.new(name="Solidify", type="SOLIDIFY")
+
+    solidify_modifier.thickness = thickness
 
 def add_smooth_modifier(obj):
     """
@@ -110,6 +145,48 @@ def add_smooth_modifier(obj):
 
     smooth_modifier.factor = 0.275
     smooth_modifier.iterations = 2
+
+def add_subdivision_modifier(obj, levels=1, render_levels=2):
+    """
+    Adds a subdivision modifier to an object.
+
+    :param obj: The object to add the subdivision modifier to.
+    :type obj: bpy.types.Object
+    """
+    subdivision_modifier = obj.modifiers.new(name="Subdivision", type="SUBSURF")
+
+    subdivision_modifier.subdivision_type = "CATMULL_CLARK"
+    subdivision_modifier.levels = levels
+    subdivision_modifier.render_levels = render_levels
+
+def postprocess_top(obj, thickness, subdivisions):
+    """
+    Postprocesses the top clothing for better output.
+
+    :param obj: The object to apply the cloth modifiers to.
+    :type obj: bpy.types.Object
+    """
+
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.modifier_apply(modifier="Cloth")
+
+    add_solidify_modifier(obj, thickness=thickness)
+    add_subdivision_modifier(obj, levels=subdivisions, render_levels=subdivisions)
+
+def postprocess_bottom(obj, thickness, subdivisions):
+    """
+    Postprocesses the bottom clothing for better output.
+
+    :param obj: The object to postprocess.
+    :type obj: bpy.types.Object
+    """
+
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.modifier_apply(modifier="Shrinkwrap")
+    bpy.ops.object.modifier_apply(modifier="Cloth")
+
+    add_solidify_modifier(obj, thickness)
+    add_subdivision_modifier(obj, levels=subdivisions, render_levels=subdivisions)
 
 def add_collision_modifier(mesh):
     """
@@ -125,3 +202,13 @@ def add_collision_modifier(mesh):
     mesh.modifiers.new(name="Collision", type="COLLISION")
     mesh.collision.thickness_inner = 0.001
     mesh.collision.thickness_outer = 0.001
+
+def shrink_waistband(obj, target_obj): 
+    shrinkwrap_modifier = obj.modifiers.new(name="Shrinkwrap", type="SHRINKWRAP")
+
+    shrinkwrap_modifier.wrap_method = "NEAREST_SURFACEPOINT"
+    shrinkwrap_modifier.wrap_mode = "ON_SURFACE"
+    shrinkwrap_modifier.target = target_obj
+    shrinkwrap_modifier.offset = 0.005
+    shrinkwrap_modifier.vertex_group = "Waistband"
+    

@@ -4,34 +4,55 @@
             "type": "top",
             "name": "T-Shirt",
             "cycles": 10,
-            "folder_path": "clothing/models/tops/t-shirt"
+            "folder_path": "clothing/models/tops/t-shirt",
+            "thickness": -0.1,
+            "subdivisions": 2
         },
         {
             "type": "top",
-            "name": "Longsleeve",
+            "name": "Sweater",
             "cycles": 10,
-            "folder_path": "clothing/models/tops/longsleeve"
+            "folder_path": "clothing/models/tops/sweater",
+            "thickness": -0.3,
+            "subdivisions": 2
+        },
+        {
+            "type": "top",
+            "name": "Hoodie",
+            "cycles": 10,
+            "folder_path": "clothing/models/tops/hoodie",
+            "thickness": -0.4,
+            "subdivisions": 2
+        },
+        {
+            "type": "bottom",
+            "name": "Pants",
+            "cycles": 10,
+            "folder_path": "clothing/models/bottoms/pants",
+            "thickness": -0.4,
+            "subdivisions": 2
+        },
+        {
+            "type": "bottom",
+            "name": "Shorts",
+            "cycles": 10,
+            "folder_path": "clothing/models/bottoms/shorts",
+            "thickness": -0.3,
+            "subdivisions": 2
         }
     ],
-    "scene": {
-        "place_camera": true,
-        "place_light": true,
-        "randomize_camera": false,
-        "randomize_light": false
+    "avatar": {
+        "randomize_pose": true,
+        "avatar_color": "#FF0000"
     },
-    "human": {
-        "randomize_pose": true
-    },
-    "clothing": {
-        "add_top": true,
-        "add_bottom": false
-    },
-    "export": {
+    "output": {
+        "render_avatar": true,
+        "render_garment": true,
+        "render_full": true,
         "export_obj": true,
         "export_fbx": false,
-        "export_glb": false
-    },
-    "render": {
-        "render_image": true
+        "export_glb": false,
+        "save_pose": true,
+        "save_export_info": true
     }
 }

@@ -3,13 +3,15 @@ import os
 import random
 from pathlib import Path
 
-from clothing.modifiers import set_cloth_material
+from clothing.modifiers import set_cloth_material, shrink_waistband
 
 # Map the clothing base names to the clothing materials
 clothing_material_map = {
-    "Shirt": "cotton",
-    "Longsleeve": "cotton",
-    "Pants": "denim"
+    "T-Shirt": "t-shirt",
+    "Sweater": "sweater",
+    "Hoodie": "hoodie",
+    "Pants": "pants",
+    "Shorts": "shorts",
 }
 
 def append_object(filepath, object_name):
@@ -79,27 +81,32 @@ def get_object_name_from_filepath(filepath):
 
     return object_name[0]
 
-def append_random_top(folder_path):
+def append_random_top(folder_path, gender):
     """
     Appends a random top to the scene.
     """
-    top_path = get_random_blend_file(folder_path)
+    top_path = get_random_blend_file(f"{folder_path}/{gender}")
 
     if top_path:
         top_obj = append_object(top_path, get_object_name_from_filepath(top_path))
         top_base_name = top_obj.name.split("_", 1)[-1]
         if top_base_name in clothing_material_map:
             set_cloth_material(top_obj, clothing_material_map[top_base_name])
-        return os.path.basename(top_path).split(".")[0]
 
-def append_random_bottom(z_offset, frame_start, frame_end, folder_path):
+        garment_name = os.path.basename(top_path).split(".")[0]
+        return garment_name, top_obj
+
+def append_random_bottom(z_offset, frame_start, frame_end, folder_path, gender):
     """
     Appends a random bottom to the scene.
     """
-    bottom_path = get_random_blend_file(folder_path)
+    bottom_path = get_random_blend_file(f"{folder_path}/{gender}")
 
     if bottom_path:
         bottom_obj = append_object(bottom_path, get_object_name_from_filepath(bottom_path))
+
+        shrink_waistband(bottom_obj, bpy.data.objects[f"SMPLX-mesh-{gender}"])
+
         bottom_obj.keyframe_insert(data_path="location", frame=frame_start, index=2)
 
         bottom_obj.location.z += z_offset
@@ -108,4 +115,6 @@ def append_random_bottom(z_offset, frame_start, frame_end, folder_path):
         bottom_base_name = bottom_obj.name.split("_", 1)[-1]
         if bottom_base_name in clothing_material_map:
             set_cloth_material(bottom_obj, clothing_material_map[bottom_base_name])
-        return os.path.basename(bottom_path).split(".")[0]
+
+        garment_name = os.path.basename(bottom_path).split(".")[0]
+        return garment_name, bottom_obj

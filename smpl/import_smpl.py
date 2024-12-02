@@ -7,7 +7,7 @@ from smpl.generate_pose import generate_random_pose
 from clothing.modifiers import add_collision_modifier
 from _helpers.material import set_material_base_color
 
-def import_smplx_model(gender="neutral"):
+def import_smplx_model(gender="male"):
     """
     Imports the SMPLX model into the scene.
 
@@ -15,7 +15,7 @@ def import_smplx_model(gender="neutral"):
     :type gender: str
     """
 
-    if gender not in ['neutral', 'male', 'female']:
+    if gender not in ['male', 'female']:
         raise ValueError("Invalid gender")
     
     if "smplx_blender_addon" not in bpy.context.preferences.addons:
@@ -77,7 +77,7 @@ def get_random_gender():
     :rtype: str
     """
 
-    genders = ["neutral", "male", "female"]
+    genders = ["male", "female"]
 
     return random.choice(genders)
 
@@ -116,7 +116,10 @@ def get_random_weight(height):
     min_weight = 18 * (height ** 2)
     max_weight = 30 * (height ** 2)
 
-    weight = max(min_weight, min(weight, max_weight))
+    if random.random() < 0.2:
+        weight += random.uniform(20, 50)
+
+    weight = max(min_weight, min(weight, max_weight + 20))
 
     return round(weight, 2)
 
@@ -182,7 +185,7 @@ def set_keyframe_shape_keys(mesh_name, frame):
     for shape_key in mesh.data.shape_keys.key_blocks:
         shape_key.keyframe_insert(data_path="value", frame=frame)
 
-def create_random_smplx_model(randomize_pose="true"):
+def create_random_smplx_model(randomize_pose="true", color="#FF0000"):
     """
     Creates a random smplx_model with a random gender, height, weight and pose. Also sets the keyframes for the animation.
 
@@ -191,19 +194,19 @@ def create_random_smplx_model(randomize_pose="true"):
     :return: gender, height, weight
     :rtype: string, float, float
     """
-    gender = "male" # get_random_gender()
+    gender = get_random_gender()
     height = get_random_height(gender)
     weight = get_random_weight(height)
-    print(f"Height: {height}, Weight: {weight}")
+    print(f"Gender: {gender}, Height: {height}, Weight: {weight}")
 
     import_smplx_model(gender)
-    set_material_base_color(f"SMPLX-mesh-{gender}", "#FF0000")
+    set_material_base_color(f"SMPLX-mesh-{gender}", color)
 
     bpy.ops.object.smplx_snap_ground_plane()
 
     start_frame = 10
 
-    end_frame = 40
+    end_frame = 60
 
     set_keyframe_bones(f"SMPLX-{gender}", start_frame)
     set_keyframe_armature_location(f"SMPLX-{gender}", start_frame)
