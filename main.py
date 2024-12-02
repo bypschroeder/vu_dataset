@@ -53,10 +53,10 @@ for clothing_config in config["clothing_cycles"]:
 
         # Add clothing
         if clothing_config["type"] == "top":
-            garment_name, top_obj = append_random_top(clothing_config["folder_path"], gender)
+            garment, top_obj = append_random_top(clothing_config["folder_path"], gender)
             
         if clothing_config["type"] == "bottom":
-            garment_name, bottom_obj = append_random_bottom(z_offset, 10, 40, clothing_config["folder_path"], gender)
+            garment, bottom_obj = append_random_bottom(z_offset, 10, 40, clothing_config["folder_path"], gender)
 
         # Bake cloth simulation
         bpy.context.scene.frame_start = 0
@@ -93,30 +93,33 @@ for clothing_config in config["clothing_cycles"]:
                 render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/avatar.png"), target_object_name=f"SMPLX-mesh-{gender}")
 
             if config["output"]["render_garment"]:
-                render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/full.png"), target_object_name=None)
+                render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/garment.png"), target_object_name=garment)
 
             if config["output"]["render_full"]:
-                render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/garment.png"), target_object_name=garment_name)
+                render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/full.png"), target_object_name=None)
 
         if config["output"]["export_obj"] or config["output"]["export_fbx"] or config["output"]["export_glb"]:
             if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj")):
                 os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj"))
 
             if config["output"]["export_obj"]:
-                export_to_obj(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/full.obj"))
+                export_to_obj(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/garment.obj"))
 
             if config["output"]["export_fbx"]:
-                export_to_fbx(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/full.fbx"))
+                export_to_fbx(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/garment.fbx"))
 
             if config["output"]["export_glb"]:
-                export_to_glb(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/full.glb"))
+                export_to_glb(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/garment.glb"))
 
         if config["output"]["save_export_info"]:
+            garment_size = garment.split("_")[0]
+            garment_name = garment.split("_")[1]
             export_info = {
                 "height": height,
                 "weight": weight,
                 "gender": gender,
                 "garment": garment_name,
+                "size": garment_size,
             }
 
             with open(get_relative_path(f"/output/{clothing_config['name']}/{i}/export_info.json"), "w") as f:

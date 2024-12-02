@@ -93,8 +93,8 @@ def append_random_top(folder_path, gender):
         if top_base_name in clothing_material_map:
             set_cloth_material(top_obj, clothing_material_map[top_base_name])
 
-        garment_name = os.path.basename(top_path).split(".")[0]
-        return garment_name, top_obj
+        garment = os.path.basename(top_path).split(".")[0]
+        return garment, top_obj
 
 def append_random_bottom(z_offset, frame_start, frame_end, folder_path, gender):
     """
@@ -116,5 +116,5 @@ def append_random_bottom(z_offset, frame_start, frame_end, folder_path, gender):
         if bottom_base_name in clothing_material_map:
             set_cloth_material(bottom_obj, clothing_material_map[bottom_base_name])
 
-        garment_name = os.path.basename(bottom_path).split(".")[0]
-        return garment_name, bottom_obj
+        garment = os.path.basename(bottom_path).split(".")[0]
+        return garment, bottom_obj

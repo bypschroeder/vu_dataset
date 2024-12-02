@@ -9,11 +9,13 @@ def export_to_obj(filepath):
     """
     bpy.ops.object.select_all(action='DESELECT')
 
+    prefixes = ("XS_", "S_", "M_", "L_", "XL_", "XXL_")
+
     for obj in bpy.data.objects:
-        if obj.type == "MESH" or obj.type == "ARMATURE":
+        if obj.type == "MESH" and obj.name.startswith(prefixes):
             obj.select_set(True)
 
-    bpy.ops.wm.obj_export(filepath=filepath)
+    bpy.ops.wm.obj_export(export_selected_objects=True, filepath=filepath)
 
 def export_to_fbx(filepath):
     """
