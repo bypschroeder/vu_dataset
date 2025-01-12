@@ -1,58 +1,58 @@
 {
-    "clothing_cycles": [
-        {
-            "type": "top",
-            "name": "T-Shirt",
-            "cycles": 10,
-            "folder_path": "clothing/models/tops/t-shirt",
-            "thickness": -0.1,
-            "subdivisions": 2
-        },
-        {
-            "type": "top",
-            "name": "Sweater",
-            "cycles": 10,
-            "folder_path": "clothing/models/tops/sweater",
-            "thickness": -0.3,
-            "subdivisions": 2
-        },
-        {
-            "type": "top",
-            "name": "Hoodie",
-            "cycles": 10,
-            "folder_path": "clothing/models/tops/hoodie",
-            "thickness": -0.4,
-            "subdivisions": 2
-        },
-        {
-            "type": "bottom",
-            "name": "Pants",
-            "cycles": 10,
-            "folder_path": "clothing/models/bottoms/pants",
-            "thickness": -0.4,
-            "subdivisions": 2
-        },
-        {
-            "type": "bottom",
-            "name": "Shorts",
-            "cycles": 10,
-            "folder_path": "clothing/models/bottoms/shorts",
-            "thickness": -0.3,
-            "subdivisions": 2
-        }
-    ],
-    "avatar": {
-        "randomize_pose": true,
-        "avatar_color": "#FF0000"
-    },
-    "output": {
-        "render_avatar": true,
-        "render_garment": true,
-        "render_full": true,
-        "export_obj": true,
-        "export_fbx": false,
-        "export_glb": false,
-        "save_pose": true,
-        "save_export_info": true
-    }
+	"clothing_cycles": [
+		{
+			"type": "top",
+			"name": "T-Shirt",
+			"cycles": 1,
+			"folder_path": "clothing/models/t-shirt",
+			"thickness": -0.01,
+			"subdivisions": 2
+		},
+		{
+			"type": "top",
+			"name": "Sweatshirt",
+			"cycles": 0,
+			"folder_path": "clothing/models/sweatshirt",
+			"thickness": -0.03,
+			"subdivisions": 2
+		},
+		{
+			"type": "top",
+			"name": "Hoodie",
+			"cycles": 0,
+			"folder_path": "clothing/models/hoodie",
+			"thickness": -0.05,
+			"subdivisions": 2
+		},
+		{
+			"type": "bottom",
+			"name": "Pants",
+			"cycles": 0,
+			"folder_path": "clothing/models/pants",
+			"thickness": -0.4,
+			"subdivisions": 2
+		},
+		{
+			"type": "bottom",
+			"name": "Shorts",
+			"cycles": 0,
+			"folder_path": "clothing/models/shorts",
+			"thickness": -0.3,
+			"subdivisions": 2
+		}
+	],
+	"avatar": {
+		"randomize_pose": true,
+		"avatar_color": "#000000"
+	},
+	"output": {
+		"render_avatar": true,
+		"render_garment": true,
+		"render_full": true,
+		"export_obj": true,
+		"export_fbx": false,
+		"export_glb": false,
+		"save_pose": true,
+		"save_export_info": true
+	}
 }

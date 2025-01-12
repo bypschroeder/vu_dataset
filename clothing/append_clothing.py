@@ -8,11 +8,12 @@ from clothing.modifiers import set_cloth_material, shrink_waistband
 # Map the clothing base names to the clothing materials
 clothing_material_map = {
     "T-Shirt": "t-shirt",
-    "Sweater": "sweater",
+    "Sweatshirt": "sweatshirt",
     "Hoodie": "hoodie",
     "Pants": "pants",
     "Shorts": "shorts",
 }
+
 
 def append_object(filepath, object_name):
     """
@@ -28,7 +29,7 @@ def append_object(filepath, object_name):
     with bpy.data.libraries.load(filepath=filepath, link=False) as (data_from, data_to):
         if object_name in data_from.objects:
             data_to.objects.append(object_name)
-    
+
     obj = bpy.data.objects.get(object_name)
 
     if obj:
@@ -40,6 +41,7 @@ def append_object(filepath, object_name):
         print(f"{object_name} could not be found")
 
     return obj
+
 
 def get_random_blend_file(folder_path):
     """
@@ -60,11 +62,12 @@ def get_random_blend_file(folder_path):
     if not blend_files:
         print("No blend files found")
         return None
-    
+
     base_dir = Path(__file__).parent.parent
     file = random.choice(blend_files)
 
     return os.path.join(base_dir, file)
+
 
 def get_object_name_from_filepath(filepath):
     """
@@ -81,6 +84,7 @@ def get_object_name_from_filepath(filepath):
 
     return object_name[0]
 
+
 def append_random_top(folder_path, gender):
     """
     Appends a random top to the scene.
@@ -96,6 +100,7 @@ def append_random_top(folder_path, gender):
         garment = os.path.basename(top_path).split(".")[0]
         return garment, top_obj
 
+
 def append_random_bottom(z_offset, frame_start, frame_end, folder_path, gender):
     """
     Appends a random bottom to the scene.
@@ -103,7 +108,9 @@ def append_random_bottom(z_offset, frame_start, frame_end, folder_path, gender):
     bottom_path = get_random_blend_file(f"{folder_path}/{gender}")
 
     if bottom_path:
-        bottom_obj = append_object(bottom_path, get_object_name_from_filepath(bottom_path))
+        bottom_obj = append_object(
+            bottom_path, get_object_name_from_filepath(bottom_path)
+        )
 
         shrink_waistband(bottom_obj, bpy.data.objects[f"SMPLX-mesh-{gender}"])
 

@@ -10,7 +10,7 @@ filelock==3.16.1
 freetype-py==2.5.1
 frozenlist==1.5.0
 fsspec==2024.9.0
-human-body-prior==0.8.5.0
+human_body_prior==0.8.5.0
 idna==3.10
 imageio==2.36.0
 Jinja2==3.1.4

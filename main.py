@@ -8,11 +8,14 @@ import pickle
 """
 Adds the necessary subdirectories to the system path so Blender can find the scripts.
 """
+
+
 def add_subdirs_to_sys_path(root_dir):
     for dirpath, dirnames, filenames in os.walk(root_dir):
         if os.path.basename(dirpath) == "__pycache__":
-            continue  
+            continue
         sys.path.append(dirpath)
+
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 add_subdirs_to_sys_path(script_dir)
@@ -49,67 +52,126 @@ for clothing_config in config["clothing_cycles"]:
         light = add_light((90, 0, 0))
 
         # Create human
-        gender, height, weight, z_offset, pose_dict = create_random_smplx_model(randomize_pose=config["avatar"]["randomize_pose"], color=config["avatar"]["avatar_color"])
+        gender, height, weight, z_offset, pose_dict = create_random_smplx_model(
+            randomize_pose=config["avatar"]["randomize_pose"],
+            color=config["avatar"]["avatar_color"],
+        )
 
         # Add clothing
         if clothing_config["type"] == "top":
             garment, top_obj = append_random_top(clothing_config["folder_path"], gender)
-            
+
         if clothing_config["type"] == "bottom":
-            garment, bottom_obj = append_random_bottom(z_offset, 10, 40, clothing_config["folder_path"], gender)
+            garment, bottom_obj = append_random_bottom(
+                z_offset, 10, 40, clothing_config["folder_path"], gender
+            )
 
         # Bake cloth simulation
         bpy.context.scene.frame_start = 0
-        bpy.context.scene.frame_end = 80
+        bpy.context.scene.frame_end = 70
 
         for obj in bpy.data.objects:
             for modifier in obj.modifiers:
-                if modifier.type == 'CLOTH': 
+                if modifier.type == "CLOTH":
                     modifier.point_cache.frame_start = bpy.context.scene.frame_start
                     modifier.point_cache.frame_end = bpy.context.scene.frame_end
 
         bpy.ops.ptcache.bake_all(bake=True)
 
         if clothing_config["type"] == "top":
-            postprocess_top(top_obj, clothing_config["thickness"], clothing_config["subdivisions"])
+            postprocess_top(
+                top_obj, clothing_config["thickness"], clothing_config["subdivisions"]
+            )
         if clothing_config["type"] == "bottom":
-            postprocess_bottom(bottom_obj, clothing_config["thickness"], clothing_config["subdivisions"])
+            postprocess_bottom(
+                bottom_obj,
+                clothing_config["thickness"],
+                clothing_config["subdivisions"],
+            )
 
         # Output
         if not os.path.exists(get_relative_path("/output")):
             os.makedirs(get_relative_path("/output"))
-        
+
         if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}")):
             os.makedirs(get_relative_path(f"/output/{clothing_config['name']}"))
 
-        if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}")):
+        if not os.path.exists(
+            get_relative_path(f"/output/{clothing_config['name']}/{i}")
+        ):
             os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}"))
 
-        if config["output"]["render_avatar"] or config["output"]["render_garment"] or config["output"]["render_full"]:
-            if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}/images")):
-                os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}/images"))
+        if (
+            config["output"]["render_avatar"]
+            or config["output"]["render_garment"]
+            or config["output"]["render_full"]
+        ):
+            if not os.path.exists(
+                get_relative_path(f"/output/{clothing_config['name']}/{i}/images")
+            ):
+                os.makedirs(
+                    get_relative_path(f"/output/{clothing_config['name']}/{i}/images")
+                )
 
             if config["output"]["render_avatar"]:
-                render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/avatar.png"), target_object_name=f"SMPLX-mesh-{gender}")
+                render_image(
+                    camera=camera,
+                    output_path=get_relative_path(
+                        f"/output/{clothing_config['name']}/{i}/images/avatar.png"
+                    ),
+                    target_object_name=f"SMPLX-mesh-{gender}",
+                )
 
             if config["output"]["render_garment"]:
-                render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/garment.png"), target_object_name=garment)
+                render_image(
+                    camera=camera,
+                    output_path=get_relative_path(
+                        f"/output/{clothing_config['name']}/{i}/images/garment.png"
+                    ),
+                    target_object_name=garment,
+                )
 
             if config["output"]["render_full"]:
-                render_image(camera=camera, output_path=get_relative_path(f"/output/{clothing_config['name']}/{i}/images/full.png"), target_object_name=None)
+                render_image(
+                    camera=camera,
+                    output_path=get_relative_path(
+                        f"/output/{clothing_config['name']}/{i}/images/full.png"
+                    ),
+                    target_object_name=None,
+                )
 
-        if config["output"]["export_obj"] or config["output"]["export_fbx"] or config["output"]["export_glb"]:
-            if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj")):
-                os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj"))
+        if (
+            config["output"]["export_obj"]
+            or config["output"]["export_fbx"]
+            or config["output"]["export_glb"]
+        ):
+            if not os.path.exists(
+                get_relative_path(f"/output/{clothing_config['name']}/{i}/obj")
+            ):
+                os.makedirs(
+                    get_relative_path(f"/output/{clothing_config['name']}/{i}/obj")
+                )
 
             if config["output"]["export_obj"]:
-                export_to_obj(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/garment.obj"))
+                export_to_obj(
+                    get_relative_path(
+                        f"/output/{clothing_config['name']}/{i}/obj/garment.obj"
+                    )
+                )
 
             if config["output"]["export_fbx"]:
-                export_to_fbx(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/garment.fbx"))
+                export_to_fbx(
+                    get_relative_path(
+                        f"/output/{clothing_config['name']}/{i}/obj/garment.fbx"
+                    )
+                )
 
             if config["output"]["export_glb"]:
-                export_to_glb(get_relative_path(f"/output/{clothing_config['name']}/{i}/obj/garment.glb"))
+                export_to_glb(
+                    get_relative_path(
+                        f"/output/{clothing_config['name']}/{i}/obj/garment.glb"
+                    )
+                )
 
         if config["output"]["save_export_info"]:
             garment_size = garment.split("_")[0]
@@ -122,16 +184,26 @@ for clothing_config in config["clothing_cycles"]:
                 "size": garment_size,
             }
 
-            with open(get_relative_path(f"/output/{clothing_config['name']}/{i}/export_info.json"), "w") as f:
+            with open(
+                get_relative_path(
+                    f"/output/{clothing_config['name']}/{i}/export_info.json"
+                ),
+                "w",
+            ) as f:
                 json.dump(export_info, f)
-        
+
         if config["output"]["save_pose"]:
-            with open(get_relative_path(f"/output/{clothing_config['name']}/{i}/pose.pkl"), "wb") as f:
+            with open(
+                get_relative_path(f"/output/{clothing_config['name']}/{i}/pose.pkl"),
+                "wb",
+            ) as f:
                 pickle.dump(pose_dict, f)
 
         # Cleanup
         del camera
         del light
-        bpy.ops.outliner.orphans_purge(do_recursive=True, do_linked_ids=True, do_local_ids=True)
+        bpy.ops.outliner.orphans_purge(
+            do_recursive=True, do_linked_ids=True, do_local_ids=True
+        )
         bpy.ops.ptcache.free_bake_all()
         gc.collect()

@@ -1,11 +1,14 @@
 import bpy
 import random
-import os
+import bmesh
+from mathutils.bvhtree import BVHTree
+from array import array
 
 from _helpers.path import get_relative_path
 from smpl.generate_pose import generate_random_pose
 from clothing.modifiers import add_collision_modifier
 from _helpers.material import set_material_base_color
+
 
 def import_smplx_model(gender="male"):
     """
@@ -15,23 +18,24 @@ def import_smplx_model(gender="male"):
     :type gender: str
     """
 
-    if gender not in ['male', 'female']:
+    if gender not in ["male", "female"]:
         raise ValueError("Invalid gender")
-    
+
     if "smplx_blender_addon" not in bpy.context.preferences.addons:
-        raise ValueError("Please install smplx addon") 
-    
-    bpy.ops.object.select_all(action='DESELECT')
+        raise ValueError("Please install smplx addon")
+
+    bpy.ops.object.select_all(action="DESELECT")
     bpy.data.window_managers["WinMan"].smplx_tool.smplx_gender = gender
     bpy.ops.scene.smplx_add_gender()
 
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action="DESELECT")
     armature = bpy.data.objects.get(f"SMPLX-{gender}")
     armature.select_set(True)
 
     bpy.context.view_layer.objects.active = armature
-    
-    armature.scale = (10, 10, 10) 
+
+    armature.scale = (10, 10, 10)
+
 
 def load_pose(path):
     """
@@ -43,6 +47,7 @@ def load_pose(path):
 
     bpy.ops.object.select_all(action="DESELECT")
     bpy.ops.object.smplx_load_pose(filepath=path)
+
 
 def set_height_weight(height, weight, gender):
     """
@@ -63,11 +68,12 @@ def set_height_weight(height, weight, gender):
     mesh = bpy.data.objects.get(f"SMPLX-mesh-{gender}")
     mesh.select_set(True)
     bpy.context.view_layer.objects.active = mesh
-    
+
     bpy.ops.object.smplx_measurements_to_shape()
     bpy.ops.object.smplx_snap_ground_plane()
 
     add_collision_modifier(mesh)
+
 
 def get_random_gender():
     """
@@ -80,6 +86,7 @@ def get_random_gender():
     genders = ["male", "female"]
 
     return random.choice(genders)
+
 
 def get_random_height(gender):
     """
@@ -98,6 +105,7 @@ def get_random_height(gender):
 
     return round(height, 2)
 
+
 def get_random_weight(height):
     """
     Returns a random weight for the SMPLX model.
@@ -108,13 +116,13 @@ def get_random_weight(height):
     :rtype: float
     """
 
-    mean_weight = 22 * (height ** 2)
+    mean_weight = 22 * (height**2)
     std_dev = 15
 
     weight = random.gauss(mean_weight, std_dev)
 
-    min_weight = 18 * (height ** 2)
-    max_weight = 30 * (height ** 2)
+    min_weight = 18 * (height**2)
+    max_weight = 30 * (height**2)
 
     if random.random() < 0.2:
         weight += random.uniform(20, 50)
@@ -122,6 +130,7 @@ def get_random_weight(height):
     weight = max(min_weight, min(weight, max_weight + 20))
 
     return round(weight, 2)
+
 
 def set_keyframe_bones(armature, frame):
     """
@@ -134,7 +143,7 @@ def set_keyframe_bones(armature, frame):
     """
     armature = bpy.data.objects.get(armature)
 
-    if armature is None or armature.type != 'ARMATURE':
+    if armature is None or armature.type != "ARMATURE":
         print("Armature not found")
         return
 
@@ -152,15 +161,16 @@ def set_keyframe_armature_location(armature, frame):
     :param frame: The frame to set the keyframe at.
     :type frame: int
     """
-    
+
     armature = bpy.data.objects.get(armature)
 
-    if armature is None or armature.type != 'ARMATURE':
+    if armature is None or armature.type != "ARMATURE":
         print("Armature not found")
         return
 
     bpy.ops.object.smplx_snap_ground_plane()
     armature.keyframe_insert(data_path="location", frame=frame)
+
 
 def set_keyframe_shape_keys(mesh_name, frame):
     """
@@ -177,13 +187,14 @@ def set_keyframe_shape_keys(mesh_name, frame):
     if not mesh:
         print(f"Mesh {mesh_name} not found")
         return
-    
+
     if not mesh.data.shape_keys:
         print(f"Mesh {mesh_name} has no shape keys")
         return
-    
+
     for shape_key in mesh.data.shape_keys.key_blocks:
         shape_key.keyframe_insert(data_path="value", frame=frame)
+
 
 def create_random_smplx_model(randomize_pose="true", color="#FF0000"):
     """
@@ -204,17 +215,30 @@ def create_random_smplx_model(randomize_pose="true", color="#FF0000"):
 
     bpy.ops.object.smplx_snap_ground_plane()
 
-    start_frame = 10
+    start_frame = 5
 
-    end_frame = 60
+    end_frame = 50
 
     set_keyframe_bones(f"SMPLX-{gender}", start_frame)
     set_keyframe_armature_location(f"SMPLX-{gender}", start_frame)
     set_keyframe_shape_keys(f"SMPLX-mesh-{gender}", start_frame)
-    
+
     if randomize_pose:
-        pose_path, pose_dict = generate_random_pose(get_relative_path("/smpl/random_pose.pkl"))
-        load_pose(pose_path)
+        while True:
+            pose_path, pose_dict = generate_random_pose(
+                get_relative_path("/smpl/random_pose.pkl")
+            )
+            load_pose(pose_path)
+
+            obj = bpy.data.objects[f"SMPLX-mesh-{gender}"]
+            depsgraph = bpy.context.evaluated_depsgraph_get()
+            obj_eval = obj.evaluated_get(depsgraph)
+
+            intersect = bmesh_check_self_intersect_object(obj_eval)
+            print(len(intersect))
+
+            if len(intersect) <= 600:
+                break
 
         set_keyframe_bones(f"SMPLX-{gender}", end_frame)
         bpy.context.scene.frame_set(end_frame)
@@ -227,14 +251,68 @@ def create_random_smplx_model(randomize_pose="true", color="#FF0000"):
 
     z_offset = None
     for fcurve in fcurves:
-        if fcurve.data_path == "location" and fcurve.array_index == 2:  # Z-axis location
+        if fcurve.data_path == "location" and fcurve.array_index == 2:  # Z-axis
             keyframe_points = fcurve.keyframe_points
-            z_start = keyframe_points[0].co[1]  # Z value at the start keyframe
-            z_end = keyframe_points[1].co[1]    # Z value at the end keyframe
+            z_start = keyframe_points[0].co[1]
+            z_end = keyframe_points[1].co[1]
             z_offset = z_end - z_start
             break
 
     if z_offset is None:
-        raise ValueError("Z-offset could not be calculated. Ensure keyframes are properly set.")
+        raise ValueError(
+            "Z-offset could not be calculated. Ensure keyframes are properly set."
+        )
 
     return gender, height, weight, z_offset, pose_dict
+
+
+# https://projects.blender.org/extensions/print3d_toolbox
+def bmesh_copy_from_object(
+    obj, transform=True, triangulate=True, apply_modifiers=False
+):
+    assert obj.type == "MESH"
+
+    if apply_modifiers and obj.modifiers:
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        obj_eval = obj.evaluated_get(depsgraph)
+        me = obj_eval.to_mesh()
+        bm = bmesh.new()
+        bm.from_mesh(me)
+        obj_eval.to_mesh_clear()
+    else:
+        me = obj.data
+        if obj.mode == "EDIT":
+            bm_orig = bmesh.from_edit_mesh(me)
+            bm = bm_orig.copy()
+        else:
+            bm = bmesh.new()
+            bm.from_mesh(me)
+
+    if transform:
+        matrix = obj.matrix_world.copy()
+        if not matrix.is_identity:
+            bm.transform(matrix)
+            # Update normals if the matrix has no rotation.
+            matrix.translation.zero()
+            if not matrix.is_identity:
+                bm.normal_update()
+
+    if triangulate:
+        bmesh.ops.triangulate(bm, faces=bm.faces)
+
+    return bm
+
+
+def bmesh_check_self_intersect_object(obj):
+    import array
+    import mathutils
+
+    if not obj.data.polygons:
+        return array.array("i", ())
+
+    bm = bmesh_copy_from_object(obj, transform=False, triangulate=False)
+    tree = mathutils.bvhtree.BVHTree.FromBMesh(bm, epsilon=0.00001)
+    overlap = tree.overlap(tree)
+    faces_error = {i for i_pair in overlap for i in i_pair}
+
+    return array.array("i", faces_error)
