@@ -3,7 +3,7 @@
 		{
 			"type": "top",
 			"name": "T-Shirt",
-			"cycles": 1,
+			"cycles": 20,
 			"folder_path": "clothing/models/t-shirt",
 			"thickness": -0.01,
 			"subdivisions": 2

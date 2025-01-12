@@ -34,7 +34,7 @@ def set_cloth_material(obj, material_type):
         cloth_settings.bending_damping = 0.500
 
         collision_settings.collision_quality = 4
-        collision_settings.distance_min = 0.05
+        collision_settings.distance_min = 0.03
 
         collision_settings.use_self_collision = True
         collision_settings.self_distance_min = 0.001
@@ -54,7 +54,7 @@ def set_cloth_material(obj, material_type):
         cloth_settings.bending_damping = 0.5
 
         collision_settings.collision_quality = 4
-        collision_settings.distance_min = 0.05
+        collision_settings.distance_min = 0.03
 
         collision_settings.use_self_collision = True
         collision_settings.self_distance_min = 0.001
@@ -77,7 +77,7 @@ def set_cloth_material(obj, material_type):
         cloth_settings.bending_damping = 0.5
 
         collision_settings.collision_quality = 4
-        collision_settings.distance_min = 0.05
+        collision_settings.distance_min = 0.03
 
         collision_settings.use_self_collision = True
         collision_settings.self_distance_min = 0.001
@@ -99,7 +99,7 @@ def set_cloth_material(obj, material_type):
         cloth_settings.bending_damping = 0.500
 
         collision_settings.collision_quality = 4
-        collision_settings.distance_min = 0.05
+        collision_settings.distance_min = 0.03
 
         collision_settings.use_self_collision = True
         collision_settings.self_distance_min = 0.001
@@ -118,7 +118,7 @@ def set_cloth_material(obj, material_type):
         cloth_settings.bending_damping = 0.500
 
         collision_settings.collision_quality = 4
-        collision_settings.distance_min = 0.05
+        collision_settings.distance_min = 0.03
 
         collision_settings.use_self_collision = True
         collision_settings.self_distance_min = 0.001
