@@ -86,42 +86,42 @@ def set_cloth_material(obj, material_type):
         cloth_settings.pin_stiffness = 0.1
     elif material_type == "hoodie":
         cloth_settings.quality = 8
-        cloth_settings.mass = 0.4
+        cloth_settings.mass = 0.5
 
-        cloth_settings.tension_stiffness = 80
-        cloth_settings.compression_stiffness = 80
-        cloth_settings.shear_stiffness = 80
-        cloth_settings.bending_stiffness = 150
+        cloth_settings.tension_stiffness = 25
+        cloth_settings.compression_stiffness = 25
+        cloth_settings.shear_stiffness = 25
+        cloth_settings.bending_stiffness = 0.800
 
-        cloth_settings.tension_damping = 25
-        cloth_settings.compression_damping = 5
-        cloth_settings.shear_damping = 25
-        cloth_settings.bending_damping = 0.500
+        cloth_settings.tension_damping = 7
+        cloth_settings.compression_damping = 7
+        cloth_settings.shear_damping = 7
+        cloth_settings.bending_damping = 0.700
 
         collision_settings.collision_quality = 4
         collision_settings.distance_min = 0.03
 
         collision_settings.use_self_collision = True
-        collision_settings.self_distance_min = 0.001
+        collision_settings.self_distance_min = 0.002
     elif material_type == "sweatshirt":
         cloth_settings.quality = 8
-        cloth_settings.mass = 0.3
+        cloth_settings.mass = 0.4
 
-        cloth_settings.tension_stiffness = 70
-        cloth_settings.compression_stiffness = 70
-        cloth_settings.shear_stiffness = 70
-        cloth_settings.bending_stiffness = 125
+        cloth_settings.tension_stiffness = 20
+        cloth_settings.compression_stiffness = 20
+        cloth_settings.shear_stiffness = 20
+        cloth_settings.bending_stiffness = 0.600
 
-        cloth_settings.tension_damping = 25
-        cloth_settings.compression_damping = 5
-        cloth_settings.shear_damping = 25
-        cloth_settings.bending_damping = 0.500
+        cloth_settings.tension_damping = 6
+        cloth_settings.compression_damping = 6
+        cloth_settings.shear_damping = 6
+        cloth_settings.bending_damping = 0.600
 
         collision_settings.collision_quality = 4
         collision_settings.distance_min = 0.03
 
         collision_settings.use_self_collision = True
-        collision_settings.self_distance_min = 0.001
+        collision_settings.self_distance_min = 0.002
     else:
         print("Material type not found")
 
