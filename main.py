@@ -45,7 +45,19 @@ Cycle through each clothing type and export the results.
 for clothing_config in config["clothing_cycles"]:
     print(f"\033[1;31mProcessing {clothing_config['name']}\033[0m")
 
+    output_base_path = get_relative_path(f"/output/{clothing_config['name']}")
+
+    if not os.path.exists(output_base_path):
+        os.makedirs(output_base_path)
+
     for i in range(clothing_config["cycles"]):
+        existing_cycles = [
+            d
+            for d in os.listdir(output_base_path)
+            if os.path.isdir(os.path.join(output_base_path, d))
+        ]
+        next_index = len(existing_cycles)
+
         # Create scene
         clear_scene()
         camera = add_camera((0, -34, 10.5), (90, 0, 0))
@@ -93,31 +105,25 @@ for clothing_config in config["clothing_cycles"]:
         if not os.path.exists(get_relative_path("/output")):
             os.makedirs(get_relative_path("/output"))
 
-        if not os.path.exists(get_relative_path(f"/output/{clothing_config['name']}")):
-            os.makedirs(get_relative_path(f"/output/{clothing_config['name']}"))
+        if not os.path.exists(output_base_path):
+            os.makedirs(output_base_path)
 
-        if not os.path.exists(
-            get_relative_path(f"/output/{clothing_config['name']}/{i}")
-        ):
-            os.makedirs(get_relative_path(f"/output/{clothing_config['name']}/{i}"))
+        current_output_path = os.path.join(output_base_path, str(next_index))
+        os.makedirs(current_output_path, exist_ok=True)
 
         if (
             config["output"]["render_avatar"]
             or config["output"]["render_garment"]
             or config["output"]["render_full"]
         ):
-            if not os.path.exists(
-                get_relative_path(f"/output/{clothing_config['name']}/{i}/images")
-            ):
-                os.makedirs(
-                    get_relative_path(f"/output/{clothing_config['name']}/{i}/images")
-                )
+            images_path = os.path.join(current_output_path, "images")
+            os.makedirs(images_path, exist_ok=True)
 
             if config["output"]["render_avatar"]:
                 render_image(
                     camera=camera,
                     output_path=get_relative_path(
-                        f"/output/{clothing_config['name']}/{i}/images/avatar.png"
+                        f"/output/{clothing_config['name']}/{next_index}/images/avatar.png"
                     ),
                     target_object_name=f"SMPLX-mesh-{gender}",
                 )
@@ -126,7 +132,7 @@ for clothing_config in config["clothing_cycles"]:
                 render_image(
                     camera=camera,
                     output_path=get_relative_path(
-                        f"/output/{clothing_config['name']}/{i}/images/garment.png"
+                        f"/output/{clothing_config['name']}/{next_index}/images/garment.png"
                     ),
                     target_object_name=garment,
                 )
@@ -135,7 +141,7 @@ for clothing_config in config["clothing_cycles"]:
                 render_image(
                     camera=camera,
                     output_path=get_relative_path(
-                        f"/output/{clothing_config['name']}/{i}/images/full.png"
+                        f"/output/{clothing_config['name']}/{next_index}/images/full.png"
                     ),
                     target_object_name=None,
                 )
@@ -146,30 +152,32 @@ for clothing_config in config["clothing_cycles"]:
             or config["output"]["export_glb"]
         ):
             if not os.path.exists(
-                get_relative_path(f"/output/{clothing_config['name']}/{i}/obj")
+                get_relative_path(f"/output/{clothing_config['name']}/{next_index}/obj")
             ):
                 os.makedirs(
-                    get_relative_path(f"/output/{clothing_config['name']}/{i}/obj")
+                    get_relative_path(
+                        f"/output/{clothing_config['name']}/{next_index}/obj"
+                    )
                 )
 
             if config["output"]["export_obj"]:
                 export_to_obj(
                     get_relative_path(
-                        f"/output/{clothing_config['name']}/{i}/obj/garment.obj"
+                        f"/output/{clothing_config['name']}/{next_index}/obj/garment.obj"
                     )
                 )
 
             if config["output"]["export_fbx"]:
                 export_to_fbx(
                     get_relative_path(
-                        f"/output/{clothing_config['name']}/{i}/obj/garment.fbx"
+                        f"/output/{clothing_config['name']}/{next_index}/obj/garment.fbx"
                     )
                 )
 
             if config["output"]["export_glb"]:
                 export_to_glb(
                     get_relative_path(
-                        f"/output/{clothing_config['name']}/{i}/obj/garment.glb"
+                        f"/output/{clothing_config['name']}/{next_index}/obj/garment.glb"
                     )
                 )
 
@@ -186,7 +194,7 @@ for clothing_config in config["clothing_cycles"]:
 
             with open(
                 get_relative_path(
-                    f"/output/{clothing_config['name']}/{i}/export_info.json"
+                    f"/output/{clothing_config['name']}/{next_index}/export_info.json"
                 ),
                 "w",
             ) as f:
@@ -194,7 +202,9 @@ for clothing_config in config["clothing_cycles"]:
 
         if config["output"]["save_pose"]:
             with open(
-                get_relative_path(f"/output/{clothing_config['name']}/{i}/pose.pkl"),
+                get_relative_path(
+                    f"/output/{clothing_config['name']}/{next_index}/pose.pkl"
+                ),
                 "wb",
             ) as f:
                 pickle.dump(pose_dict, f)
