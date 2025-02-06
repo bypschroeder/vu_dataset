@@ -46,10 +46,10 @@ Blender arguments:
 
 Script arguments:
 
-- `iterations`: The number of iterations to run for each garment.
-- `garments`: Specify one or more garments to use. If not specified all garments will be processed.
-- `gender`: The gender of the avatar. If not specified, a random gender will be used.
-- `output_path`: The output path for the results.
+- `--iterations`: The number of iterations to run for each garment.
+- `--garments`: Specify one or more garments to use. If not specified all garments will be processed.
+- `--gender`: The gender of the avatar. If not specified, a random gender will be used.
+- `--output_path`: The output path for the results.
 
 Example:
 
