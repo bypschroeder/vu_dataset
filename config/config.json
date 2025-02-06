@@ -1,58 +1,46 @@
 {
-	"clothing_cycles": [
-		{
-			"type": "top",
-			"name": "T-Shirt",
-			"cycles": 20,
-			"folder_path": "clothing/models/t-shirt",
-			"thickness": -0.01,
-			"subdivisions": 2
+	"scene": {
+		"light_rotation": [90, 0, 0],
+		"front": {
+			"camera_location": [0, -3.4, 1],
+			"camera_rotation": [90, 0, 0]
 		},
-		{
-			"type": "top",
-			"name": "Sweatshirt",
-			"cycles": 0,
-			"folder_path": "clothing/models/sweatshirt",
-			"thickness": -0.03,
-			"subdivisions": 2
+		"side": {
+			"camera_location": [3.4, 0, 1],
+			"camera_rotation": [90, 0, 90]
 		},
-		{
-			"type": "top",
-			"name": "Hoodie",
-			"cycles": 0,
-			"folder_path": "clothing/models/hoodie",
-			"thickness": -0.05,
-			"subdivisions": 2
-		},
-		{
-			"type": "bottom",
-			"name": "Pants",
-			"cycles": 0,
-			"folder_path": "clothing/models/pants",
-			"thickness": -0.4,
-			"subdivisions": 2
-		},
-		{
-			"type": "bottom",
-			"name": "Shorts",
-			"cycles": 0,
-			"folder_path": "clothing/models/shorts",
-			"thickness": -0.3,
-			"subdivisions": 2
+		"back": {
+			"camera_location": [0, 3.4, 1],
+			"camera_rotation": [-90, 180, 0]
 		}
-	],
-	"avatar": {
-		"randomize_pose": true,
-		"avatar_color": "#000000"
 	},
-	"output": {
-		"render_avatar": true,
-		"render_garment": true,
-		"render_full": true,
-		"export_obj": true,
-		"export_fbx": false,
-		"export_glb": false,
-		"save_pose": true,
-		"save_export_info": true
-	}
+	"avatar": {
+		"color": "#000000",
+		"thickness_inner": 0.001,
+		"thickness_outer": 0.001
+	},
+	"garment": {
+		"color": "#C2C2C2"
+	},
+	"animation": {
+		"start_frame": 0,
+		"end_frame": 70
+	},
+	"render": {
+		"avatar": true,
+		"garment": true,
+		"full": true,
+		"perspectives": {
+			"side": true,
+			"back": true
+		}
+	},
+	"export": {
+		"format": "OBJ",
+		"avatar": true,
+		"garment": true,
+		"full": true
+	},
+	"save_pose": true,
+	"save_export_info": true
 }

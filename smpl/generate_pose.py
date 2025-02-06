@@ -6,20 +6,16 @@ from pathlib import Path
 from trimesh import Trimesh
 
 
-def generate_random_pose(output_path, num_samples=1):
-    """
-    Generates and saves a pose image using the SMPL model and VPoser model.
+def generate_random_pose(output_path):
+    """Generates a random pose for the SMPLX model.
 
-    :param bm_path: The path to the SMPL model.
-    :type bm_path: str
-    :param expr_dir: The path to the VPoser model.
-    :type expr_dir: str
-    :param output_image_path: The path to save the pose image.
-    :type output_image_path: str
-    :param num_samples: The number of samples to generate.
-    :type num_samples: int
-    """
+    Args:
+        output_path (str): The path to the output file as .pkl.
 
+    Returns:
+        str: The path to the output file.
+        dict: The pose dictionary.
+    """
     base_dir = Path(__file__).parent
     expr_dir = base_dir / "vposer_v1_0"
 
@@ -27,7 +23,7 @@ def generate_random_pose(output_path, num_samples=1):
     vposer_pt, _ = load_vposer(expr_dir, vp_model="snapshot")
 
     # Generate a random pose
-    sampled_pose_body = c2c(vposer_pt.sample_poses(num_poses=num_samples))
+    sampled_pose_body = c2c(vposer_pt.sample_poses(num_poses=1))
     flat_pose_body = sampled_pose_body.reshape(
         sampled_pose_body.shape[1]
         * sampled_pose_body.shape[2]

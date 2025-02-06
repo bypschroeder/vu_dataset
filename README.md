@@ -1,4 +1,8 @@
-# Installation
+# VU_Blender
+
+This is a Blender script to generate 3D avatars with SMPLX models and fit clothes to them.
+
+## Installation
 
 ### Code
 
@@ -14,38 +18,40 @@ Additionally, add Blender's installation folder to your system's PATH environmen
 
 To install the required addon and setup Blender, run the setup.py script with `blender --python setup.py`.
 
-Modify the configuration file as needed for settings like Cycles and others.
+### Configs
 
-Now you can start the main-script by running `blender --python main.py` or if you want to run it in background `blender --background --python main.py`
+The configs are located in the `config` folder. There is a base config file `config.json` which stores the general settings for the script. For each garment, a seperate config file is required. The config files are located in the `config/garments` folder. These store individual settings for each garment.
 
-# VPoser
+### VPoser
 
-When running the VPoser to generate a SMPLX-Pose and visualize it with an SMPLX-Model some dependencies need to be adjusted.
+On the first run, an error will occur when generating an SMPLX-Pose with Vposer. To fix this, adjust the following lines in `.venv/lib/site-packages/torchgeometry/core/conversions.py`:
 
-1. torchgeometry: torchgeometry\core\conversions.py, line 302,
-   - mask_c1 = mask_d2 _ (1 - mask_d0_d1) => mask_c1 = mask_d2 _ ~(mask_d0_d1)
-   - mask_c2 = (1 - mask_d2) _ mask_d0_nd1 => mask_c2 = ~(mask_d2) _ mask_d0_nd1
-   - mask_c3 = (1 - mask_d2) _ (1 - mask_d0_nd1) => mask_c3 = ~(mask_d2) _ ~(mask_d0_nd1)
-2. human_body_prior: human_body_prior\body_model\body_model.py
+- line 302: Replace `mask_c1 = mask_d2 * (1 - mask_d0_d1)` with `mask_c1 = mask_d2 * ~(mask_d0_d1)`
+- line 303: Replace `mask_c2 = (1 - mask_d2) * mask_d0_nd1` with `mask_c2 = ~(mask_d2) * mask_d0_nd1`
+- line 304: Replace `mask_c3 = (1 - mask_d2) * (1 - mask_d0_nd1)` with `mask_c3 = ~(mask_d2) * ~(mask_d0_nd1)`
 
-   - verts, joints = lbs(betas=shape_components, pose=full_pose, v_template=self.v_template,
-     shapedirs=shapedirs, posedirs=self.posedirs,
-     J_regressor=self.J_regressor, parents=self.kintree_table[0].long(),
-     lbs_weights=self.weights,
-     dtype=self.dtype)
+## Usage
 
-   - verts, joints = lbs(betas=shape_components, pose=full_pose, v_template=self.v_template,
-     shapedirs=shapedirs, posedirs=self.posedirs,
-     J_regressor=self.J_regressor, parents=self.kintree_table[0].long(),
-     lbs_weights=self.weights)
+Run the following command to start the script:
 
-# TODOs
+```bash
+blender -b -P main.py -- --iterations {number of iterations} --garments {list of garments} --gender {gender of avatar} --output_path {path where the results should be saved}
+```
 
-- [x] Blender crashes fixen
-- [x] Installationsanleitung + Dokumentation
-- [ ] Mehr Tops/Bottoms erstellen in XS - XXL
-- [ ] Hosenbund in Blender an Hüfte anpassen und pinnen?
-- [x] SMPLX-Posen generieren
-- [x] Mesh in 1 Farbe, damit man es unterscheiden kann
-- [x] 3 Bilder einmal nur Mesh, nur Kleidung und beides
-- [x] 1x .obj, 3 Bilder, 1x SMPL-Pose, 1x Größe, Gewicht, Geschlecht, Kleidergröße
+Blender arguments:
+
+- `-b` (`--background`): Run Blender in the background.
+- `-P` (`--python`): Specify the Python script to run.
+
+Script arguments:
+
+- `iterations`: The number of iterations to run for each garment.
+- `garments`: Specify one or more garments to use. If not specified all garments will be processed.
+- `gender`: The gender of the avatar. If not specified, a random gender will be used.
+- `output_path`: The output path for the results.
+
+Example:
+
+```bash
+blender -b -P main.py -- --iterations 10 --garments t-shirt hoodie --output_path ./output
+```

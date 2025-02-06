@@ -1,53 +1,67 @@
 import bpy
+import os
+import json
+import pickle
 
 
-def export_to_obj(filepath):
-    """
-    Exports the current scene to an OBJ file.
+def export_to_obj(output_path, garment=None, avatar=None):
+    """Exports the current scene to an OBJ file.
 
-    :param filepath: The path to the output file.
-    :type filepath: str
+    Args:
+        output_path (str): The path to the output file.
+        garment (bpy.types.Object, optional): The garment object to export. Defaults to None.
+        avatar (bpy.types.Object, optional): The avatar object to export. Defaults to None.
+
+    Notes:
+        Only exports the selected objects which are given as garment or avatar.
     """
     bpy.ops.object.select_all(action="DESELECT")
 
-    prefixes = ("XS_", "S_", "M_", "L_", "XL_", "XXL_")
+    if garment is not None:
+        garment.select_set(True)
 
-    for obj in bpy.data.objects:
-        if obj.type == "MESH" and obj.name.startswith(prefixes):
-            obj.select_set(True)
+    if avatar is not None:
+        avatar.select_set(True)
 
     bpy.ops.wm.obj_export(
-        export_selected_objects=True, filepath=filepath, export_materials=False
+        export_selected_objects=True, filepath=output_path, export_materials=True
     )
 
 
-def export_to_fbx(filepath):
+def save_export_info(height, weight, gender, garment, size, output_path):
+    """Saves the export information to a JSON file.
+
+    Args:
+        height (float): The height of the avatar.
+        weight (float): The weight of the avatar.
+        gender (str): The gender of the avatar.
+        garment (str): The name of the garment.
+        size (str): The size of the garment.
+        output_path (str): The path to the output directory.
     """
-    Exports the current scene to an FBX file.
+    export_info = {
+        "height": height,
+        "weight": weight,
+        "gender": gender,
+        "garment": garment,
+        "size": size,
+    }
+    with open(
+        os.path.join(output_path, "export_info.json"),
+        "w",
+    ) as f:
+        json.dump(export_info, f)
 
-    :param filepath: The path to the output file.
-    :type filepath: str
+
+def save_pose(pose_dict, output_path):
+    """Saves the pose to a pickle file.
+
+    Args:
+        pose_dict (dict): The pose dictionary.
+        output_path (str): The path to the output directory.
     """
-    bpy.ops.object.select_all(action="DESELECT")
-
-    for obj in bpy.data.objects:
-        if obj.type == "MESH" or obj.type == "ARMATURE":
-            obj.select_set(True)
-
-    bpy.ops.export_scene.fbx(filepath=filepath)
-
-
-def export_to_glb(filepath):
-    """
-    Exports the current scene to an GLB file.
-
-    :param filepath: The path to the output file.
-    :type filepath: str
-    """
-    bpy.ops.object.select_all(action="DESELECT")
-
-    for obj in bpy.data.objects:
-        if obj.type == "MESH" or obj.type == "ARMATURE":
-            obj.select_set(True)
-
-    bpy.ops.export_scene.gltf(filepath=filepath)
+    with open(
+        os.path.join(output_path, "pose.pkl"),
+        "wb",
+    ) as f:
+        pickle.dump(pose_dict, f)
