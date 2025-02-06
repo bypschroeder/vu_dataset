@@ -42,6 +42,7 @@ Blender arguments:
 
 - `-b` (`--background`): Run Blender in the background.
 - `-P` (`--python`): Specify the Python script to run.
+- `--`: This is required to seperate blender arguments from script arguments.
 
 Script arguments:
 
