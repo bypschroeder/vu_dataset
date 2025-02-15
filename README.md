@@ -24,8 +24,6 @@ This is a Blender script to generate 3D avatars with SMPLX models and fit clothe
    └── ...
 ```
 
-6. Run the setup script for blender with `blender -P setup.py`.
-
 ### Blender
 
 It is recommended to install a fresh version of Blender for your production setup.
