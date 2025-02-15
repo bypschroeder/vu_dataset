@@ -189,3 +189,6 @@ pip-selfcheck.json
 
 output/
 smpl/random_pose.pkl
+smpl/vposer_v1_0/
+smpl/*.zip
+clothing/models/

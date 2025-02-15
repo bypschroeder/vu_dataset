@@ -22,18 +22,22 @@ def load_config(config_path):
 
     return config
 
+
 def load_garment_configs(config_path, garments):
     garment_configs = {}
     for filename in os.listdir(config_path):
         if filename.endswith(".json"):
-            garment_type = filename.split(".")[0]
+            garment_type = filename.split(".")[0].lower()
             garment_configs[garment_type] = load_config(
                 os.path.join(config_path, filename)
             )
 
     if garments:
+        garments_lower = {garment.lower() for garment in garments}
         garment_configs = {
-            name: garment_configs[name] for name in garments if name in garment_configs
+            name: config
+            for name, config in garment_configs.items()
+            if name in garments_lower
         }
 
     return garment_configs

@@ -12,7 +12,8 @@
 		"back": {
 			"camera_location": [0, 3.4, 1],
 			"camera_rotation": [-90, 180, 0]
-		}
+		},
+		"scale": 10
 	},
 	"avatar": {
 		"color": "#000000",

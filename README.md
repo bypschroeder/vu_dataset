@@ -8,8 +8,24 @@ This is a Blender script to generate 3D avatars with SMPLX models and fit clothe
 
 1. Clone this repository.
 2. Set up a venv with python 3.11.xx (only works with 3.11 or lower) `python -m venv venv` and set it as your Python Interpreter.
-3. Activate the venv in the Terminal with `venv\Scripts\activate`
-4. Install the dependencies with `pip install -r ./requirements.txt`
+3. Activate the venv in the Terminal with `venv\Scripts\activate`.
+4. Install the dependencies with `pip install -r ./requirements.txt`.
+5. Download the [Blender-Addon](https://nextcloud.hof-university.de/s/SXQAAxskkddQD4Ev), [VPoser](https://nextcloud.hof-university.de/s/jFzqDKyj8DwDwE7) and the [Clothes](https://nextcloud.hof-university.de/s/FL7qc6ywYTGyEgK). Put them in the directory like this:
+
+   vu_blender
+   ├── clothing
+   │ ├── models
+   │ │ ├── t-shirt
+   │ │ | ├── male
+   │ │ | ├── female  
+   │ │ ├── sweatshirt  
+   │ │ ├── hoodie  
+   ├── smpl
+   │ ├── vposer_v1_0
+   │ ├── smplx_blender_addon_20220623.zip # Do not unzip this
+   └── ...
+
+6. Run the setup script for blender with `blender -P setup.py`.
 
 ### Blender
 

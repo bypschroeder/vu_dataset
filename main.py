@@ -29,6 +29,7 @@ from _helpers.scene import (
 )
 from _helpers.export import export_to_obj, save_export_info, save_pose
 from _helpers.render import render_image
+from _helpers.modifier import add_collision
 from smpl.import_smpl import (
     import_smplx_model,
     get_random_gender,
@@ -50,7 +51,6 @@ from clothing.fit_garment import (
     bind_deform,
     post_process,
 )
-from clothing.modifiers import add_collision
 
 # Parse arguments
 parser = ArgumentParserForBlender()
@@ -80,8 +80,37 @@ garments = args.garments
 gender = args.gender
 output_path = args.output_path
 
-# Load configs
+# Load base config
 config = load_config(os.path.abspath("./config/config.json"))
+
+# Set constants
+LIGHT_ROTATION = config["scene"]["light_rotation"]
+FRONT_CAMERA_LOCATION = config["scene"]["front"]["camera_location"]
+FRONT_CAMERA_ROTATION = config["scene"]["front"]["camera_rotation"]
+SIDE_CAMERA_LOCATION = config["scene"]["side"]["camera_location"]
+SIDE_CAMERA_ROTATION = config["scene"]["side"]["camera_rotation"]
+BACK_CAMERA_LOCATION = config["scene"]["back"]["camera_location"]
+BACK_CAMERA_ROTATION = config["scene"]["back"]["camera_rotation"]
+SCALE = config["scene"]["scale"]
+AVATAR_COLOR = config["avatar"]["color"]
+AVATAR_THICKNESS_INNER = config["avatar"]["thickness_inner"]
+AVATAR_THICKNESS_OUTER = config["avatar"]["thickness_outer"]
+GARMENT_COLOR = config["garment"]["color"]
+ANIMATION_START_FRAME = config["animation"]["start_frame"]
+ANIMATION_END_FRAME = config["animation"]["end_frame"]
+RENDER_AVATAR = config["render"]["avatar"]
+RENDER_GARMENT = config["render"]["garment"]
+RENDER_FULL = config["render"]["full"]
+RENDER_SIDE_PERSPECTIVE = config["render"]["perspectives"]["side"]
+RENDER_BACK_PERSPECTIVE = config["render"]["perspectives"]["back"]
+EXPORT_FORMAT = config["export"]["format"]
+EXPORT_AVATAR = config["export"]["avatar"]
+EXPORT_GARMENT = config["export"]["garment"]
+EXPORT_FULL = config["export"]["full"]
+SAVE_EXPORT_INFO = config["save_export_info"]
+SAVE_POSE = config["save_pose"]
+
+# Load garment configs
 garment_configs = load_garment_configs(os.path.abspath("./config/garments"), garments)
 
 # Disable the Blender splash screen at startup.
@@ -103,13 +132,8 @@ for garment_type, garment_config in garment_configs.items():
         ]
         next_index = len(existing_iterations)
 
-        # Create scene
+        # Clear scene
         clear_scene()
-        camera, light = setup_scene(
-            camera_location=tuple(config["scene"]["front"]["camera_location"]),
-            camera_rotation=tuple(config["scene"]["front"]["camera_rotation"]),
-            light_rotation=tuple(config["scene"]["light_rotation"]),
-        )
 
         # Get random height, weight, gender
         if not gender:
@@ -122,17 +146,17 @@ for garment_type, garment_config in garment_configs.items():
         armature, mesh = import_smplx_model(gender)
 
         # Scale up for better simulation
-        scale_obj(armature, 10)
+        scale_obj(armature, SCALE)
 
         # Set color
-        set_color(mesh, config["avatar"]["color"])
+        set_color(mesh, AVATAR_COLOR)
 
         bpy.ops.object.smplx_snap_ground_plane()
 
         # Set keyframes
-        set_keyframe_bones(armature, config["animation"]["start_frame"] + 5)
-        set_keyframe_location(armature, config["animation"]["start_frame"] + 5)
-        set_keyframe_shape_keys(mesh, config["animation"]["start_frame"] + 5)
+        set_keyframe_bones(armature, ANIMATION_START_FRAME + 5)
+        set_keyframe_location(armature, ANIMATION_START_FRAME + 5)
+        set_keyframe_shape_keys(mesh, ANIMATION_START_FRAME + 5)
 
         # Load pose and check for self-intersections
         while True:
@@ -151,11 +175,11 @@ for garment_type, garment_config in garment_configs.items():
                 break
 
         # Set Keyframes
-        set_keyframe_bones(armature, config["animation"]["end_frame"])
-        bpy.context.scene.frame_set(config["animation"]["end_frame"])
-        set_height_weight(height, weight, gender) # Apply height and weight to mesh
-        set_keyframe_shape_keys(mesh, config["animation"]["end_frame"])
-        set_keyframe_location(armature, config["animation"]["end_frame"])
+        set_keyframe_bones(armature, ANIMATION_END_FRAME)
+        bpy.context.scene.frame_set(ANIMATION_END_FRAME)
+        set_height_weight(height, weight, gender)  # Apply height and weight to mesh
+        set_keyframe_shape_keys(mesh, ANIMATION_END_FRAME)
+        set_keyframe_location(armature, ANIMATION_END_FRAME)
 
         # Only for bottoms relevant
         z_offset = None
@@ -173,7 +197,7 @@ for garment_type, garment_config in garment_configs.items():
             )
 
         # Add collision for avatar
-        add_collision(mesh, thickness_inner=0.001, thickness_outer=0.001)
+        add_collision(mesh, AVATAR_THICKNESS_INNER, AVATAR_THICKNESS_OUTER)
 
         # Add clothing
         garment_path = get_random_blend_file(
@@ -185,11 +209,11 @@ for garment_type, garment_config in garment_configs.items():
             garment_name,
         )
         # Scale up for better simulation
-        scale_obj(garment, 10)
+        scale_obj(garment, SCALE)
         apply_all_transforms(garment)
 
         # Set color
-        set_color(garment, config["garment"]["color"])
+        set_color(garment, GARMENT_COLOR)
 
         # Create proxy and add cloth simulation
         if garment_config["decimation_ratio"] < 1.0:
@@ -197,114 +221,107 @@ for garment_type, garment_config in garment_configs.items():
             set_cloth(proxy, garment_config["cloth_settings"])
             bpy.context.scene.frame_set(config["animation"]["start_frame"])
             surface_mod = bind_deform(proxy, garment)
-            bake_cloth(
-                config["animation"]["start_frame"], config["animation"]["end_frame"]
-            )
+            bake_cloth(ANIMATION_START_FRAME, ANIMATION_END_FRAME)
             apply_deform(garment, surface_mod, proxy)
         else:
             set_cloth(garment, garment_config["cloth_settings"])
-            bake_cloth(
-                config["animation"]["start_frame"], config["animation"]["end_frame"]
-            )
+            bake_cloth(ANIMATION_START_FRAME, ANIMATION_END_FRAME)
 
         # Post process
-        seams_bevel = garment_config["post_process"]["seams_bevel"]
-        shrink_seams = garment_config["post_process"]["shrink_seams"]
-        thickness = garment_config["post_process"]["thickness"]
-        subdivisions = garment_config["post_process"]["subdivisions"]
-        post_process(garment, seams_bevel, shrink_seams, thickness, subdivisions)
+        SEAMS_BEVEL = garment_config["post_process"]["seams_bevel"]
+        SHRINK_SEAMS = garment_config["post_process"]["shrink_seams"]
+        THICKNESS = garment_config["post_process"]["thickness"]
+        SUBDIVISIONS = garment_config["post_process"]["subdivisions"]
+        post_process(garment, SEAMS_BEVEL, SHRINK_SEAMS, THICKNESS, SUBDIVISIONS)
 
         # Reset scale
         scale_obj(armature, 1)
         bpy.ops.object.smplx_snap_ground_plane()
-        set_keyframe_location(armature, config["animation"]["end_frame"])
-        scale_obj(garment, 0.1)
+        set_keyframe_location(armature, ANIMATION_END_FRAME)
+        scale_obj(garment, 1 / SCALE)
 
         # Output
-        current_output_path = os.path.join(output_base_path, str(next_index)) 
+        current_output_path = os.path.join(output_base_path, str(next_index))
         os.makedirs(current_output_path, exist_ok=True)
 
         # Render images
-        if (
-            config["render"]["avatar"]
-            or config["render"]["garment"]
-            or config["render"]["full"]
-        ):
+        if RENDER_AVATAR or RENDER_GARMENT or RENDER_FULL:
             images_path = os.path.join(current_output_path, "images")
             os.makedirs(images_path, exist_ok=True)
 
-        if config["render"]["perspectives"]["side"]:
-            side_rotation = tuple(
-                math.radians(angle)
-                for angle in config["scene"]["side"]["camera_rotation"]
+            # Setup scene
+            camera, light = setup_scene(
+                camera_location=tuple(FRONT_CAMERA_LOCATION),
+                camera_rotation=tuple(FRONT_CAMERA_ROTATION),
+                light_rotation=tuple(LIGHT_ROTATION),
             )
+
+        if RENDER_SIDE_PERSPECTIVE:
+            side_rotation = tuple(math.radians(angle) for angle in SIDE_CAMERA_ROTATION)
             bpy.ops.object.camera_add(
-                location=config["scene"]["side"]["camera_location"],
+                location=SIDE_CAMERA_LOCATION,
                 rotation=side_rotation,
             )
             camera_side = bpy.context.object
-        if config["render"]["perspectives"]["back"]:
-            back_rotation = tuple(
-                math.radians(angle)
-                for angle in config["scene"]["back"]["camera_rotation"]
-            )
+        if RENDER_BACK_PERSPECTIVE:
+            back_rotation = tuple(math.radians(angle) for angle in BACK_CAMERA_ROTATION)
             bpy.ops.object.camera_add(
-                location=config["scene"]["back"]["camera_location"],
+                location=BACK_CAMERA_LOCATION,
                 rotation=back_rotation,
             )
             camera_back = bpy.context.object
 
-        if config["render"]["avatar"]:
+        if RENDER_AVATAR:
             render_image(
                 camera=camera,
                 output_path=os.path.join(images_path, "avatar.png"),
                 target_obj=mesh,
             )
-            if config["render"]["perspectives"]["side"]:
+            if RENDER_SIDE_PERSPECTIVE:
                 render_image(
                     camera=camera_side,
                     output_path=os.path.join(images_path, "avatar_side.png"),
                     target_obj=mesh,
                 )
-            if config["render"]["perspectives"]["back"]:
+            if RENDER_BACK_PERSPECTIVE:
                 render_image(
                     camera=camera_back,
                     output_path=os.path.join(images_path, "avatar_back.png"),
                     target_obj=mesh,
                 )
 
-        if config["render"]["garment"]:
+        if RENDER_GARMENT:
             render_image(
                 camera=camera,
                 output_path=os.path.join(images_path, "garment.png"),
                 target_obj=garment,
             )
-            if config["render"]["perspectives"]["side"]:
+            if RENDER_SIDE_PERSPECTIVE:
                 render_image(
                     camera=camera_side,
                     output_path=os.path.join(images_path, "garment_side.png"),
                     target_obj=garment,
                 )
-            if config["render"]["perspectives"]["back"]:
+            if RENDER_BACK_PERSPECTIVE:
                 render_image(
                     camera=camera_back,
                     output_path=os.path.join(images_path, "garment_back.png"),
                     target_obj=garment,
                 )
 
-        if config["render"]["full"]:
+        if RENDER_FULL:
             render_image(
                 camera=camera,
                 output_path=os.path.join(images_path, "full.png"),
                 target_obj=None,
             )
-            if config["render"]["perspectives"]["side"]:
+            if RENDER_SIDE_PERSPECTIVE:
                 render_image(
                     camera=camera_side,
                     output_path=os.path.join(images_path, "full_side.png"),
                     target_obj=None,
                 )
-            if config["render"]["perspectives"]["back"]:
+            if RENDER_BACK_PERSPECTIVE:
                 render_image(
                     camera=camera_back,
                     output_path=os.path.join(images_path, "full_back.png"),
@@ -312,38 +329,45 @@ for garment_type, garment_config in garment_configs.items():
                 )
 
         # Export 3D
-        if config["export"]["format"] == "OBJ":
+        if EXPORT_FORMAT == "OBJ":
             obj_export_path = os.path.join(current_output_path, "obj")
             os.makedirs(obj_export_path, exist_ok=True)
-            if config["export"]["avatar"]:
+            if EXPORT_AVATAR:
                 export_to_obj(
                     os.path.join(obj_export_path, "avatar.obj"),
                     garment=None,
                     avatar=mesh,
                 )
-            if config["export"]["garment"]:
+            if EXPORT_GARMENT:
                 export_to_obj(
                     os.path.join(obj_export_path, "garment.obj"),
                     garment=garment,
                     avatar=None,
                 )
-            if config["export"]["full"]:
+            if EXPORT_FULL:
                 export_to_obj(
                     os.path.join(obj_export_path, "full.obj"),
                     garment=garment,
                     avatar=mesh,
                 )
-        elif config["export"]["format"] != "OBJ":
+        elif EXPORT_FORMAT != "OBJ":
             raise ValueError(
                 f"Unsupported export format: {config['export']['format']} is not supported yet."
             )
 
         # Save Info
-        if config["save_export_info"]:
-            save_export_info(height, weight, gender, garment_name, garment_name.split("_")[0], current_output_path)
+        if SAVE_EXPORT_INFO:
+            save_export_info(
+                height,
+                weight,
+                gender,
+                garment_name,
+                garment_name.split("_")[0],
+                current_output_path,
+            )
 
         # Save pose
-        if config["save_pose"]:
+        if SAVE_POSE:
             save_pose(pose_dict, current_output_path)
 
         # Cleanup

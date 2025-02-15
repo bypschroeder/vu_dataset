@@ -1,7 +1,7 @@
 {
 	"type": "top",
 	"folder_path": "clothing/models/hoodie",
-	"decimate_ratio": 0.2,
+	"decimation_ratio": 0.2,
 	"cloth_settings": {
 		"quality": 8,
 		"time_scale": 1,
