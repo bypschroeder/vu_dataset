@@ -1,6 +1,6 @@
-# VU_Blender
+# vu_dataset
 
-This is a Blender script to generate 3D avatars with SMPLX models and fit clothes to them.
+This is a Blender script to generate a dataset containing SMPL-X-Avatars with fitted clothes.
 
 ## Installation
 
@@ -13,7 +13,7 @@ This is a Blender script to generate 3D avatars with SMPLX models and fit clothe
 5. Download the [Blender-Addon](https://nextcloud.hof-university.de/s/SXQAAxskkddQD4E), [VPoser](https://nextcloud.hof-university.de/s/jFzqDKyj8DwDwE7) and the [Clothes](https://nextcloud.hof-university.de/s/FL7qc6ywYTGyEgK). Put them in the directory like this:
 
 ```bash
-   vu_blender
+   vu_dataset
    ├── clothing
    │   ├── models
    │   │   ├── t-shirt
