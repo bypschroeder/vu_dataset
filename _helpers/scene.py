@@ -19,25 +19,34 @@ def clear_scene():
             bpy.data.collections.remove(collection)
 
 
-def setup_scene(camera_location, camera_rotation, light_rotation):
-    """Sets up the scene with a camera and light.
+def setup_scene(views):
+    """Sets up the scene for the different renders including a camera and a light for each perspective.
 
     Args:
-        camera_location (tuple): The location of the camera. Must be a tuple of x, y, and z coordinates.
-        camera_rotation (tuple): The rotation of the camera. Must be a tuple of x, y, and z angles in degrees.
-        light_rotation (tuple): The rotation of the light. Must be a tuple of x, y, and z angles in degrees.
+        scene (dict): The dictionary with keys of camera_location, camera_rotation and light_rotation for each perspective
+
+    Returns:
+        list: All created cameras
     """
-    c_rotation = tuple(math.radians(angle) for angle in camera_rotation)
-    l_rotation = tuple(math.radians(angle) for angle in light_rotation)
+    cameras = {}
 
-    bpy.ops.object.camera_add(location=camera_location, rotation=c_rotation)
-    camera = bpy.context.object
-    light = bpy.ops.object.light_add(
-        type="SUN", radius=10, location=(0, 0, 0), rotation=l_rotation
-    )
-    light = bpy.context.object
+    for name, settings in views.items():
+        camera_location = settings["camera_location"]
+        camera_rotation = tuple(
+            math.radians(angle) for angle in settings["camera_rotation"]
+        )
+        light_rotation = tuple(
+            math.radians(angle) for angle in settings["light_rotation"]
+        )
 
-    return camera, light
+        bpy.ops.object.camera_add(location=camera_location, rotation=camera_rotation)
+        camera = bpy.context.object
+        camera.name = f"Camera_{name}"
+        cameras[name] = camera
+
+        bpy.ops.object.light_add(type="SUN", rotation=light_rotation)
+
+    return cameras
 
 
 def apply_all_transforms(obj):
@@ -165,6 +174,14 @@ def get_random_blend_file(folder_path):
     file = random.choice(blend_files)
 
     return os.path.join(base_dir, file)
+
+
+def apply_z_offset_keyframes(garment, z_offset, start_frame, end_frame):
+    garment.keyframe_insert(data_path="location", frame=start_frame)
+
+    garment.location.z += z_offset
+    garment.keyframe_insert(data_path="location", frame=end_frame)
+
 
 def cleanup():
     bpy.ops.outliner.orphans_purge(

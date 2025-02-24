@@ -25,11 +25,12 @@ from _helpers.scene import (
     set_color,
     get_random_blend_file,
     apply_all_transforms,
+    apply_z_offset_keyframes,
     cleanup,
 )
 from _helpers.export import export_to_obj, save_export_info, save_pose
 from _helpers.render import render_image
-from _helpers.modifier import add_collision
+from _helpers.modifier import add_collision, shrink_waistband
 from smpl.import_smpl import (
     import_smplx_model,
     get_random_gender,
@@ -83,14 +84,9 @@ output_path = args.output_path
 # Load base config
 config = load_config(os.path.abspath("./config/config.json"))
 
+# TODO: start/endframe überarbeiten
 # Set constants
-LIGHT_ROTATION = config["scene"]["light_rotation"]
-FRONT_CAMERA_LOCATION = config["scene"]["front"]["camera_location"]
-FRONT_CAMERA_ROTATION = config["scene"]["front"]["camera_rotation"]
-SIDE_CAMERA_LOCATION = config["scene"]["side"]["camera_location"]
-SIDE_CAMERA_ROTATION = config["scene"]["side"]["camera_rotation"]
-BACK_CAMERA_LOCATION = config["scene"]["back"]["camera_location"]
-BACK_CAMERA_ROTATION = config["scene"]["back"]["camera_rotation"]
+VIEWS = config["scene"]["views"]
 SCALE = config["scene"]["scale"]
 AVATAR_COLOR = config["avatar"]["color"]
 AVATAR_THICKNESS_INNER = config["avatar"]["thickness_inner"]
@@ -101,7 +97,9 @@ ANIMATION_END_FRAME = config["animation"]["end_frame"]
 RENDER_AVATAR = config["render"]["avatar"]
 RENDER_GARMENT = config["render"]["garment"]
 RENDER_FULL = config["render"]["full"]
-RENDER_SIDE_PERSPECTIVE = config["render"]["perspectives"]["side"]
+RENDER_FRONT_PERSPECTIVE = config["render"]["perspectives"]["front"]
+RENDER_LEFT_SIDE_PERSPECTIVE = config["render"]["perspectives"]["left_side"]
+RENDER_RIGHT_SIDE_PERSPECTIVE = config["render"]["perspectives"]["right_side"]
 RENDER_BACK_PERSPECTIVE = config["render"]["perspectives"]["back"]
 EXPORT_FORMAT = config["export"]["format"]
 EXPORT_AVATAR = config["export"]["avatar"]
@@ -189,6 +187,7 @@ for garment_type, garment_config in garment_configs.items():
                 z_start = keyframe_points[0].co[1]
                 z_end = keyframe_points[1].co[1]
                 z_offset = z_end - z_start
+                z_offset = z_offset
                 break
 
         if z_offset is None:
@@ -219,11 +218,18 @@ for garment_type, garment_config in garment_configs.items():
         if garment_config["decimation_ratio"] < 1.0:
             proxy = create_proxy(garment, garment_config["decimation_ratio"])
             set_cloth(proxy, garment_config["cloth_settings"])
+
             bpy.context.scene.frame_set(config["animation"]["start_frame"])
             surface_mod = bind_deform(proxy, garment)
             bake_cloth(ANIMATION_START_FRAME, ANIMATION_END_FRAME)
             apply_deform(garment, surface_mod, proxy)
         else:
+            # Proxy doesn't work for bottoms
+            if garment_config["type"] == "bottom":
+                apply_z_offset_keyframes(
+                    garment, z_offset, ANIMATION_START_FRAME + 5, ANIMATION_END_FRAME
+                )
+
             set_cloth(garment, garment_config["cloth_settings"])
             bake_cloth(ANIMATION_START_FRAME, ANIMATION_END_FRAME)
 
@@ -239,6 +245,9 @@ for garment_type, garment_config in garment_configs.items():
         bpy.ops.object.smplx_snap_ground_plane()
         set_keyframe_location(armature, ANIMATION_END_FRAME)
         scale_obj(garment, 1 / SCALE)
+        if garment_config["type"] == "bottom":
+            garment.location.z = z_offset / SCALE
+            garment.keyframe_insert(data_path="location", frame=ANIMATION_END_FRAME)
 
         # Output
         current_output_path = os.path.join(output_base_path, str(next_index))
@@ -250,80 +259,82 @@ for garment_type, garment_config in garment_configs.items():
             os.makedirs(images_path, exist_ok=True)
 
             # Setup scene
-            camera, light = setup_scene(
-                camera_location=tuple(FRONT_CAMERA_LOCATION),
-                camera_rotation=tuple(FRONT_CAMERA_ROTATION),
-                light_rotation=tuple(LIGHT_ROTATION),
-            )
-
-        if RENDER_SIDE_PERSPECTIVE:
-            side_rotation = tuple(math.radians(angle) for angle in SIDE_CAMERA_ROTATION)
-            bpy.ops.object.camera_add(
-                location=SIDE_CAMERA_LOCATION,
-                rotation=side_rotation,
-            )
-            camera_side = bpy.context.object
-        if RENDER_BACK_PERSPECTIVE:
-            back_rotation = tuple(math.radians(angle) for angle in BACK_CAMERA_ROTATION)
-            bpy.ops.object.camera_add(
-                location=BACK_CAMERA_LOCATION,
-                rotation=back_rotation,
-            )
-            camera_back = bpy.context.object
+            cameras = setup_scene(VIEWS)
 
         if RENDER_AVATAR:
-            render_image(
-                camera=camera,
-                output_path=os.path.join(images_path, "avatar.png"),
-                target_obj=mesh,
-            )
-            if RENDER_SIDE_PERSPECTIVE:
+            if RENDER_FRONT_PERSPECTIVE:
                 render_image(
-                    camera=camera_side,
-                    output_path=os.path.join(images_path, "avatar_side.png"),
+                    camera=cameras["front"],
+                    output_path=os.path.join(images_path, "avatar_front.png"),
+                    target_obj=mesh,
+                )
+            if RENDER_LEFT_SIDE_PERSPECTIVE:
+                render_image(
+                    camera=cameras["left_side"],
+                    output_path=os.path.join(images_path, "avatar_left_side.png"),
+                    target_obj=mesh,
+                )
+            if RENDER_RIGHT_SIDE_PERSPECTIVE:
+                render_image(
+                    camera=cameras["right_side"],
+                    output_path=os.path.join(images_path, "avatar_right_side.png"),
                     target_obj=mesh,
                 )
             if RENDER_BACK_PERSPECTIVE:
                 render_image(
-                    camera=camera_back,
+                    camera=cameras["back"],
                     output_path=os.path.join(images_path, "avatar_back.png"),
                     target_obj=mesh,
                 )
 
         if RENDER_GARMENT:
-            render_image(
-                camera=camera,
-                output_path=os.path.join(images_path, "garment.png"),
-                target_obj=garment,
-            )
-            if RENDER_SIDE_PERSPECTIVE:
+            if RENDER_FRONT_PERSPECTIVE:
                 render_image(
-                    camera=camera_side,
-                    output_path=os.path.join(images_path, "garment_side.png"),
+                    camera=cameras["front"],
+                    output_path=os.path.join(images_path, "garment_front.png"),
+                    target_obj=garment,
+                )
+            if RENDER_LEFT_SIDE_PERSPECTIVE:
+                render_image(
+                    camera=cameras["left_side"],
+                    output_path=os.path.join(images_path, "garment_left_side.png"),
+                    target_obj=garment,
+                )
+            if RENDER_RIGHT_SIDE_PERSPECTIVE:
+                render_image(
+                    camera=cameras["right_side"],
+                    output_path=os.path.join(images_path, "garment_right_side.png"),
                     target_obj=garment,
                 )
             if RENDER_BACK_PERSPECTIVE:
                 render_image(
-                    camera=camera_back,
+                    camera=cameras["back"],
                     output_path=os.path.join(images_path, "garment_back.png"),
                     target_obj=garment,
                 )
 
         if RENDER_FULL:
-            render_image(
-                camera=camera,
-                output_path=os.path.join(images_path, "full.png"),
-                target_obj=None,
-            )
-            if RENDER_SIDE_PERSPECTIVE:
+            if RENDER_FRONT_PERSPECTIVE:
                 render_image(
-                    camera=camera_side,
-                    output_path=os.path.join(images_path, "full_side.png"),
+                    camera=cameras["front"],
+                    output_path=os.path.join(images_path, "full_front.png"),
+                    target_obj=None,
+                )
+            if RENDER_LEFT_SIDE_PERSPECTIVE:
+                render_image(
+                    camera=cameras["left_side"],
+                    output_path=os.path.join(images_path, "full_left_side.png"),
+                    target_obj=None,
+                )
+            if RENDER_RIGHT_SIDE_PERSPECTIVE:
+                render_image(
+                    camera=cameras["right_side"],
+                    output_path=os.path.join(images_path, "full_right_side.png"),
                     target_obj=None,
                 )
             if RENDER_BACK_PERSPECTIVE:
                 render_image(
-                    camera=camera_back,
+                    camera=cameras["back"],
                     output_path=os.path.join(images_path, "full_back.png"),
                     target_obj=None,
                 )

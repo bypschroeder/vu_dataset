@@ -1,17 +1,26 @@
 {
 	"scene": {
-		"light_rotation": [90, 0, 0],
-		"front": {
-			"camera_location": [0, -3.4, 1],
-			"camera_rotation": [90, 0, 0]
-		},
-		"side": {
-			"camera_location": [3.4, 0, 1],
-			"camera_rotation": [90, 0, 90]
-		},
-		"back": {
-			"camera_location": [0, 3.4, 1],
-			"camera_rotation": [-90, 180, 0]
+		"views": {
+			"front": {
+				"camera_location": [0, -3.4, 1],
+				"camera_rotation": [90, 0, 0],
+				"light_rotation": [90, 0, 0]
+			},
+			"left_side": {
+				"camera_location": [-3.4, 0, 1],
+				"camera_rotation": [90, 0, -90],
+				"light_rotation": [90, 0, -90]
+			},
+			"right_side": {
+				"camera_location": [3.4, 0, 1],
+				"camera_rotation": [90, 0, 90],
+				"light_rotation": [90, 0, 90]
+			},
+			"back": {
+				"camera_location": [0, 3.4, 1],
+				"camera_rotation": [-90, 180, 0],
+				"light_rotation": [-90, 0, 0]
+			}
 		},
 		"scale": 10
 	},
@@ -32,8 +41,10 @@
 		"garment": true,
 		"full": true,
 		"perspectives": {
-			"side": true,
-			"back": true
+			"front": true,
+			"left_side": false,
+			"right_side": false,
+			"back": false
 		}
 	},
 	"export": {
