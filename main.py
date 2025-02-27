@@ -167,9 +167,9 @@ for garment_type, garment_config in garment_configs.items():
             obj_eval = mesh.evaluated_get(depsgraph)
 
             intersect = bmesh_check_self_intersect_object(obj_eval)
-            print(len(intersect))
 
             if len(intersect) <= 600:
+                print("Regenerating Pose")
                 break
 
         # Set Keyframes
@@ -372,7 +372,7 @@ for garment_type, garment_config in garment_configs.items():
                 height,
                 weight,
                 gender,
-                garment_name,
+                garment_name.split("_")[1],
                 garment_name.split("_")[0],
                 current_output_path,
             )
