@@ -42,9 +42,9 @@
 		"full": true,
 		"perspectives": {
 			"front": true,
-			"left_side": false,
-			"right_side": false,
-			"back": false
+			"left_side": true,
+			"right_side": true,
+			"back": true
 		}
 	},
 	"export": {
