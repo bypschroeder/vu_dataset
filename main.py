@@ -1,7 +1,6 @@
 import bpy
 import os
 import sys
-import math
 
 
 # Adds the necessary subdirectories to the system path so Blender can find the scripts.
@@ -70,7 +69,6 @@ parser.add_argument(
 parser.add_argument(
     "--gender",
     type=str,
-    default="male",
     help="The gender of the avatar. If not specified, a random gender will be used.",
 )
 parser.add_argument("--output_path", type=str, help="The output path for the results.")
@@ -78,7 +76,7 @@ parser.add_argument("--output_path", type=str, help="The output path for the res
 args = parser.parse_args()
 iterations = args.iterations
 garments = args.garments
-gender = args.gender
+gender_args = args.gender
 output_path = args.output_path
 
 # Load base config
@@ -134,11 +132,14 @@ for garment_type, garment_config in garment_configs.items():
         clear_scene()
 
         # Get random height, weight, gender
-        if not gender:
+        if gender_args:
+            gender = gender_args
+        else:
             gender = get_random_gender()
         height = get_random_height(gender)
-        weight = get_random_weight(height)
+        weight = get_random_weight(height, gender)
         print(f"Gender: {gender}, Height: {height}, Weight: {weight}")
+        break
 
         # Import SMPLX model
         armature, mesh = import_smplx_model(gender)
@@ -383,3 +384,4 @@ for garment_type, garment_config in garment_configs.items():
 
         # Cleanup
         cleanup()
+        gender = None

@@ -1,6 +1,7 @@
 import bpy
 import random
 import bmesh
+import numpy as np
 
 
 def import_smplx_model(gender="male"):
@@ -71,10 +72,10 @@ def get_random_gender():
         str: The random gender.
     """
     genders = ["male", "female"]
-
     return random.choice(genders)
 
 
+# https://bookdown.org/content/1c8fedce-597c-462d-bfdd-e1a0f2c8596d/2-1-population-versus-samples.html
 def get_random_height(gender):
     """Returns a random height for the SMPLX model.
 
@@ -88,39 +89,55 @@ def get_random_height(gender):
         The height is based on the gender of the model.
     """
     if gender == "female":
-        height = random.triangular(1.4, 1.65, 2.0)
+        mean = 1.62
+        stddev = 0.071
     else:
-        height = random.triangular(1.5, 1.8, 2.2)
+        mean = 1.76
+        stddev = 0.071
+
+    height = np.random.normal(mean, stddev)
+
+    height = max(1.40, min(height, 2.10))
 
     return round(height, 2)
 
 
-def get_random_weight(height):
+# https://www.nature.com/articles/0803117
+def get_random_weight(height, gender):
     """Returns a random weight for the SMPLX model.
 
     Args:
         height (float): The height of the model in meters.
+        gender (str): The gender of the model. Must be "male" or "female".
 
     Returns:
         float: The random weight in kilograms.
 
     Notes:
-        The weight is based on the height of the model.
+        The weight is based on the height and the gender of the model.
     """
-    mean_weight = 22 * (height**2)
-    std_dev = 15
 
-    weight = random.gauss(mean_weight, std_dev)
+    if gender == "female":
+        base_bmi = 22
+    else:
+        base_bmi = 25
 
-    min_weight = 18 * (height**2)
-    max_weight = 30 * (height**2)
+    stddev = 5
 
-    if random.random() < 0.2:
-        weight += random.uniform(20, 50)
+    weight_modifier = np.random.normal(0, stddev)
 
-    weight = max(min_weight, min(weight, max_weight + 20))
+    bmi_adjustment = min(max(weight_modifier, -8), 8)
+    adjusted_weight = (base_bmi + bmi_adjustment) * (height**2)
 
-    return round(weight, 2)
+    min_bmi = 16
+    min_weight = min_bmi * (height**2)
+
+    max_bmi = 40
+    max_weight = max_bmi * (height**2)
+
+    final_weight = max(min(adjusted_weight, max_weight), min_weight)
+
+    return round(final_weight, 1)
 
 
 def set_keyframe_bones(armature, frame):
