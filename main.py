@@ -139,7 +139,6 @@ for garment_type, garment_config in garment_configs.items():
         height = get_random_height(gender)
         weight = get_random_weight(height, gender)
         print(f"Gender: {gender}, Height: {height}, Weight: {weight}")
-        break
 
         # Import SMPLX model
         armature, mesh = import_smplx_model(gender)
