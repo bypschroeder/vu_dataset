@@ -44,14 +44,14 @@
 			"front": true,
 			"left_side": true,
 			"right_side": true,
-			"back": true
+			"back": false
 		}
 	},
 	"export": {
 		"format": "OBJ",
-		"avatar": true,
-		"garment": true,
-		"full": true
+		"avatar": false,
+		"garment": false,
+		"full": false
 	},
 	"save_pose": true,
 	"save_export_info": true
