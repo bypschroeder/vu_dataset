@@ -69,3 +69,7 @@ Example:
 ```bash
 blender -b -P main.py -- --iterations 10 --garments t-shirt hoodie --output_path ./output
 ```
+
+## Project Files
+
+The project files for the 3D clothing models can be downloaded [here](https://nextcloud.hof-university.de/s/tFB6DtDLdiTZtgW).
